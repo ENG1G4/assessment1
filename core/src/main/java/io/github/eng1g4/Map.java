@@ -173,7 +173,7 @@ public class Map extends ApplicationAdapter implements Disposable {
     }
 
 
-
+	// Draws both heatmaps
     private void drawHeatmaps(ShapeRenderer shapeRenderer){
         for (int y = 0; y < studentDensityMap.size(); y++){
             for (int x = 0; x < studentDensityMap.get(y).size(); x++){
