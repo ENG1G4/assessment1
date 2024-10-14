@@ -1,7 +1,6 @@
 package io.github.eng1g4;
 
 import com.badlogic.gdx.*;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -12,15 +11,10 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.audio.Sound;
 
 
-import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import io.github.eng1g4.Map;
-import io.github.eng1g4.Building;
 
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
@@ -55,7 +49,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
         float virtualWidth = virtualHeight * aspectRatio;
 
         camera = new OrthographicCamera();
-        viewport = new ExtendViewport(virtualWidth, virtualHeight, camera);
+        viewport = new FitViewport(virtualWidth, virtualHeight, camera);
         viewport.apply();
 
         camera.position.set(virtualWidth / 2f, virtualHeight / 2f, 0);

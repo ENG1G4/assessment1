@@ -14,7 +14,7 @@ public class PlacableObject {
     private int tileX; // grid position
     private int tileY;
 
-    public PlacableObject(String texturePath, int width, int height) {
+    public PlacableObject(String texturePath, int width, int height, int x, int y) {
         // Use texture cache to avoid loading the same texture multiple times
         if (textureCache.containsKey(texturePath)) {
             this.texture = textureCache.get(texturePath);
@@ -24,6 +24,23 @@ public class PlacableObject {
         }
         this.width = width;
         this.height = height;
+        this.tileX = x;
+        this.tileY = y;
+    }
+
+    protected int getTileX(){
+        return tileX;
+    }
+    protected int getTileY(){
+        return tileY;
+    }
+
+    protected int getWidth(){
+        return width;
+    }
+
+    protected int getHeight(){
+        return height;
     }
 
     // Copy constructor

@@ -2,6 +2,7 @@ package io.github.eng1g4;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -32,13 +33,15 @@ public class Map extends ApplicationAdapter implements Disposable {
     private PlacableObject objectToPlace;
     private ArrayList<PlacableObject> placableObjects;
 
+    private ArrayList<ArrayList<Float>> studentDensityMap;
+    private ArrayList<ArrayList<Float>> satisfactionMap;
+
     public Map(String backgroundTexturePath, int width, int height, float virtualWidth, float virtualHeight) {
         this.width = width;
         this.height = height;
         backgroundTexture = new Texture(Gdx.files.internal(backgroundTexturePath));
 
         placableObjects = new ArrayList<>();
-        objectToPlace = new PlacableObject("libgdx.png", 3, 2);
 
         this.virtualWidth = virtualWidth;
         this.virtualHeight = virtualHeight;
@@ -49,6 +52,14 @@ public class Map extends ApplicationAdapter implements Disposable {
         // Calculate the origin to center the grid over the texture
         originX = 0;
         originY = 0;
+        studentDensityMap = new ArrayList<>();
+        for (int i = 0; i < height; i++){
+            studentDensityMap.add(new ArrayList<>());
+            for (int j = 0; j < width; j++){
+                studentDensityMap.get(i).add(0f);
+            }
+        }
+
         updateTileSizeAndOrigin(virtualWidth, virtualHeight);
     }
 
@@ -85,6 +96,33 @@ public class Map extends ApplicationAdapter implements Disposable {
         shapeRenderer.end();
     }
 
+    private void colourCell(ShapeRenderer shapeRenderer, int tileX, int tileY, Color color){
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(color); // Semi-transparent red color
+
+        float screenX = (tileX - tileY) * (tileWidth / 2f) + originX;
+        float screenY = (tileX + tileY) * (tileHeight / 2f) + originY;
+
+        // Calculate the four corners of the diamond (tile)
+        float x0 = screenX;
+        float y0 = screenY + (tileHeight / 2f);
+
+        float x1 = screenX + (tileWidth / 2f);
+        float y1 = screenY + tileHeight;
+
+        float x2 = screenX + tileWidth;
+        float y2 = screenY + (tileHeight / 2f);
+
+        float x3 = screenX + (tileWidth / 2f);
+        float y3 = screenY;
+
+        // Draw two triangles to fill the diamond
+        shapeRenderer.triangle(x0, y0, x1, y1, x2, y2);
+        shapeRenderer.triangle(x2, y2, x3, y3, x0, y0);
+
+        shapeRenderer.end();
+    }
+
     private void drawHoweveredCell(ShapeRenderer shapeRenderer, float mouseWorldX, float mouseWorldY) {
         // Determine which tile the mouse is over
         int[] hoveredTile = screenToTile(mouseWorldX, mouseWorldY);
@@ -93,30 +131,7 @@ public class Map extends ApplicationAdapter implements Disposable {
 
         // First, draw the highlighted tile if it is within the map bounds
         if (hoverX >= 0 && hoverX < width && hoverY >= 0 && hoverY < height) {
-            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-            shapeRenderer.setColor(1, 0, 0, 1f); // Semi-transparent red color
-
-            float screenX = (hoverX - hoverY) * (tileWidth / 2f) + originX;
-            float screenY = (hoverX + hoverY) * (tileHeight / 2f) + originY;
-
-            // Calculate the four corners of the diamond (tile)
-            float x0 = screenX;
-            float y0 = screenY + (tileHeight / 2f);
-
-            float x1 = screenX + (tileWidth / 2f);
-            float y1 = screenY + tileHeight;
-
-            float x2 = screenX + tileWidth;
-            float y2 = screenY + (tileHeight / 2f);
-
-            float x3 = screenX + (tileWidth / 2f);
-            float y3 = screenY;
-
-            // Draw two triangles to fill the diamond
-            shapeRenderer.triangle(x0, y0, x1, y1, x2, y2);
-            shapeRenderer.triangle(x2, y2, x3, y3, x0, y0);
-
-            shapeRenderer.end();
+            colourCell(shapeRenderer, hoverX, hoverY, Color.BLUE);
         }
     }
 
@@ -130,25 +145,44 @@ public class Map extends ApplicationAdapter implements Disposable {
         // Check if the tile is within the map bounds
         if (tileX >= 0 && tileX < width && tileY >= 0 && tileY < height) {
             // Create a new PlacableObject at this tile
-            PlacableObject newObject = new PlacableObject(objectToPlace);
-            newObject.setPosition(tileX, tileY);
+            Accomodation newObject = new Accomodation("libgdx.png", 3, 2,tileX, tileY, studentDensityMap);
             placableObjects.add(newObject);
         }
     }
 
+    private void drawStudentHeatmap(ShapeRenderer shapeRenderer){
+        for (int y = 0; y < studentDensityMap.size(); y++){
+            for (int x = 0; x < studentDensityMap.get(y).size(); x++){
+                float element = studentDensityMap.get(y).get(x);
+                if (element > 0){
+                    colourCell(shapeRenderer, x, y, new Color(element/25f, 0, 0, 1));
+                }
+            }
+        }
+    }
+
+    private void drawBuildings(ShapeRenderer shapeRenderer){
+        for (PlacableObject building: placableObjects){
+            colourCell(shapeRenderer, building.getTileX(), building.getTileY(), Color.GREEN);
+        }
+    }
+
     public void draw(SpriteBatch batch, ShapeRenderer shapeRenderer, float mouseWorldX, float mouseWorldY) {
-        batch.begin();
-        batch.draw(backgroundTexture, 0, 0, virtualWidth, virtualHeight);
-        batch.end();
+//        batch.begin();
+        //batch.draw(backgroundTexture, 0, 0, virtualWidth, virtualHeight);
+//        batch.end();
 
         drawHoweveredCell(shapeRenderer, mouseWorldX, mouseWorldY);
+        drawStudentHeatmap(shapeRenderer);
+        drawBuildings(shapeRenderer);
         drawGrid(shapeRenderer);
 
-        batch.begin();
-        for (PlacableObject obj : placableObjects) {
-            obj.draw(batch, originX, originY, tileWidth, tileHeight);
-        }
-        batch.end();
+
+//        batch.begin();
+//        for (PlacableObject obj : placableObjects) {
+//            obj.draw(batch, originX, originY, tileWidth, tileHeight);
+//        }
+//        batch.end();
     }
 
 
