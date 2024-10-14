@@ -134,10 +134,16 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        System.out.println(screenX + " " + screenY);
-        if (button == Input.Buttons.LEFT) {
+        if (button == Input.Buttons.LEFT || button == Input.Buttons.RIGHT) {
             Vector3 worldCoordinates = camera.unproject(new Vector3(screenX, screenY, 0));
-            map.handleClick(worldCoordinates.x, worldCoordinates.y);
+			if (button == Input.Buttons.RIGHT) {
+				map.handleClickRight(worldCoordinates.x, worldCoordinates.y);
+				System.out.println("Right Clicked @ " + screenX + " " + screenY);
+			} else {
+				map.handleClickLeft(worldCoordinates.x, worldCoordinates.y);
+				System.out.println("Left Clicked @ " + screenX + " " + screenY);
+			}
+			System.out.println("Score: " + map.calculateSatisfactionScore());
             return true;
         }
         return false;
