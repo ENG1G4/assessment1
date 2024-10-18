@@ -3,25 +3,20 @@ package io.github.eng1g4;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
-import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.function.Consumer;
 
 public class Map extends ApplicationAdapter implements Disposable {
-    private int width;
-    private int height;
-    private Texture backgroundTexture;
+    private final int width;
+    private final int height;
+    private final Texture backgroundTexture;
     private TextureRegion backgroundRegion;
     private float originX;
     private float originY;
@@ -30,18 +25,15 @@ public class Map extends ApplicationAdapter implements Disposable {
 
     private float virtualWidth;
     private float virtualHeight;
-    private PlacableObject objectToPlace;
-    private ArrayList<PlacableObject> placableObjects;
-
-    private ArrayList<ArrayList<Float>> studentDensityMap;
-    private ArrayList<ArrayList<Float>> satisfactionMap;
+    private PlaceableObject objectToPlace;
+    private final ArrayList<PlaceableObject> placeableObjects;
 
     public Map(String backgroundTexturePath, int width, int height, float virtualWidth, float virtualHeight) {
         this.width = width;
         this.height = height;
         backgroundTexture = new Texture(Gdx.files.internal(backgroundTexturePath));
 
-        placableObjects = new ArrayList<>();
+        placeableObjects = new ArrayList<>();
 
         this.virtualWidth = virtualWidth;
         this.virtualHeight = virtualHeight;
@@ -52,65 +44,13 @@ public class Map extends ApplicationAdapter implements Disposable {
         // Calculate the origin to center the grid over the texture
         originX = 0;
         originY = 0;
-        studentDensityMap = new ArrayList<>();
-        for (int i = 0; i < height; i++){
-            studentDensityMap.add(new ArrayList<>());
-            for (int j = 0; j < width; j++){
-                studentDensityMap.get(i).add(0f);
-            }
-        }
-
-        satisfactionMap = new ArrayList<>();
-        for (int i = 0; i < height; i++){
-            satisfactionMap.add(new ArrayList<>());
-            for (int j = 0; j < width; j++){
-                satisfactionMap.get(i).add(0f);
-            }
-        }
-
 
         updateTileSizeAndOrigin(virtualWidth, virtualHeight);
     }
 
-    private void drawGrid(ShapeRenderer shapeRenderer){
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(1, 1, 1, 1); // White color for lines
-
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                float screenX = (x - y) * (tileWidth / 2f) + originX;
-                float screenY = (x + y) * (tileHeight / 2f) + originY;
-
-                // Calculate the four corners of the diamond (tile)
-                float x0 = screenX;
-                float y0 = screenY + (tileHeight / 2f);
-
-                float x1 = screenX + (tileWidth / 2f);
-                float y1 = screenY + tileHeight;
-
-                float x2 = screenX + tileWidth;
-                float y2 = screenY + (tileHeight / 2f);
-
-                float x3 = screenX + (tileWidth / 2f);
-                float y3 = screenY;
-
-                // Draw lines between the points
-                shapeRenderer.line(x0, y0, x1, y1);
-                shapeRenderer.line(x1, y1, x2, y2);
-                shapeRenderer.line(x2, y2, x3, y3);
-                shapeRenderer.line(x3, y3, x0, y0);
-            }
-        }
-
-        shapeRenderer.end();
-    }
-
-    private void colourCell(ShapeRenderer shapeRenderer, int tileX, int tileY, Color color){
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(color); // Semi-transparent red color
-
-        float screenX = (tileX - tileY) * (tileWidth / 2f) + originX;
-        float screenY = (tileX + tileY) * (tileHeight / 2f) + originY;
+    private void drawOnGrid(Consumer<Diamond> consumer, int x, int y) {
+        float screenX = (x - y) * (this.tileWidth / 2f) + this.originX;
+        float screenY = (x + y) * (this.tileHeight / 2f) + this.originY;
 
         // Calculate the four corners of the diamond (tile)
         float x0 = screenX;
@@ -125,9 +65,37 @@ public class Map extends ApplicationAdapter implements Disposable {
         float x3 = screenX + (tileWidth / 2f);
         float y3 = screenY;
 
-        // Draw two triangles to fill the diamond
-        shapeRenderer.triangle(x0, y0, x1, y1, x2, y2);
-        shapeRenderer.triangle(x2, y2, x3, y3, x0, y0);
+        consumer.accept(new Diamond(x0, y0, x1, y1, x2, y2, x3, y3));
+    }
+
+    private void drawGrid(ShapeRenderer shapeRenderer) {
+        shapeRenderer.begin(ShapeType.Line);
+        shapeRenderer.setColor(1, 1, 1, 1); // White color for lines
+
+        for (int x = 0; x < this.width; x++) {
+            for (int y = 0; y < this.height; y++) {
+                drawOnGrid(diamond -> {
+                    // Draw lines between the points
+                    shapeRenderer.line(diamond.x0(), diamond.y0(), diamond.x1(), diamond.y1());
+                    shapeRenderer.line(diamond.x1(), diamond.y1(), diamond.x2(), diamond.y2());
+                    shapeRenderer.line(diamond.x2(), diamond.y2(), diamond.x3(), diamond.y3());
+                    shapeRenderer.line(diamond.x3(), diamond.y3(), diamond.x0(), diamond.y0());
+                }, x, y);
+            }
+        }
+
+        shapeRenderer.end();
+    }
+
+    private void colourCell(ShapeRenderer shapeRenderer, int tileX, int tileY, Color color){
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(color); // Semi-transparent red color
+
+        drawOnGrid(diamond -> {
+            // Draw two triangles to fill the diamond
+            shapeRenderer.triangle(diamond.x0(), diamond.y0(), diamond.x1(), diamond.y1(), diamond.x2(), diamond.y2());
+            shapeRenderer.triangle(diamond.x2(), diamond.y2(), diamond.x3(), diamond.y3(), diamond.x0(), diamond.y0());
+        }, tileX, tileY);
 
         shapeRenderer.end();
     }
@@ -149,12 +117,12 @@ public class Map extends ApplicationAdapter implements Disposable {
         int[] tileCoords = screenToTile(worldX, worldY);
         int tileX = tileCoords[0];
         int tileY = tileCoords[1];
-		
+
         // Check if the tile is within the map bounds
         if (tileX >= 0 && tileX < width && tileY >= 0 && tileY < height) {
             // Create a new PlacableObject at this tile
-            Accomodation newObject = new Accomodation("libgdx.png", 3, 2,tileX, tileY, studentDensityMap);
-            placableObjects.add(newObject);
+            Accommodation newObject = new Accommodation(tileX, tileY);
+            placeableObjects.add(newObject);
         }
     }
 
@@ -167,50 +135,27 @@ public class Map extends ApplicationAdapter implements Disposable {
         // Check if the tile is within the map bounds
         if (tileX >= 0 && tileX < width && tileY >= 0 && tileY < height) {
             // Create a new PlacableObject at this tile
-            SportsCentre newObject = new SportsCentre("libgdx.png", 3, 2,tileX, tileY, satisfactionMap);
-            placableObjects.add(newObject);
+            SportsCentre newObject = new SportsCentre(tileX, tileY);
+            placeableObjects.add(newObject);
         }
     }
 
 
-	// Draws both heatmaps
-    private void drawHeatmaps(ShapeRenderer shapeRenderer){
-        for (int y = 0; y < studentDensityMap.size(); y++){
-            for (int x = 0; x < studentDensityMap.get(y).size(); x++){
-				// density map and satisfaction map should always be the same size so assuming such is fine
-                float elementDensity = studentDensityMap.get(y).get(x);
-                float elementSatisfaction = satisfactionMap.get(y).get(x);
+    private void drawBuildings(SpriteBatch batch) {
+        batch.begin();
 
-				// Density is red, Satisfaction is Blue
-                if (elementDensity > 0 || elementSatisfaction > 0){
-                    colourCell(shapeRenderer, x, y, new Color(elementDensity/25f, 0, elementSatisfaction/25f, 1f));
-                }
-            }
+        for (PlaceableObject building: placeableObjects){
+            building.draw(batch, this.originX, this.originY, this.tileWidth, this.tileHeight);
         }
-    }
 
-    private void drawBuildings(ShapeRenderer shapeRenderer){
-        for (PlacableObject building: placableObjects){
-            colourCell(shapeRenderer, building.getTileX(), building.getTileY(), building.getColor());
-        }
+        batch.end();
     }
 
     public void draw(SpriteBatch batch, ShapeRenderer shapeRenderer, float mouseWorldX, float mouseWorldY) {
-//        batch.begin();
-        //batch.draw(backgroundTexture, 0, 0, virtualWidth, virtualHeight);
-//        batch.end();
-
-        drawHoweveredCell(shapeRenderer, mouseWorldX, mouseWorldY);
-        drawHeatmaps(shapeRenderer);
-        drawBuildings(shapeRenderer);
         drawGrid(shapeRenderer);
+        drawHoweveredCell(shapeRenderer, mouseWorldX, mouseWorldY);
 
-
-//        batch.begin();
-//        for (PlacableObject obj : placableObjects) {
-//            obj.draw(batch, originX, originY, tileWidth, tileHeight);
-//        }
-//        batch.end();
+        drawBuildings(batch);
     }
 
 
@@ -251,18 +196,6 @@ public class Map extends ApplicationAdapter implements Disposable {
         originX = (virtualWidth - totalGridWidth) / 2f + virtualWidth/2f;
         originY = (virtualHeight - totalGridHeight) / 2f;
     }
-
-
-	public float calculateSatisfactionScore(){
-		float score = 0f;
-
-        for (int y = 0; y < studentDensityMap.size(); y++){
-            for (int x = 0; x < studentDensityMap.get(y).size(); x++){
-				score += studentDensityMap.get(y).get(x) * satisfactionMap.get(y).get(x);
-			}
-		}
-		return score;
-	}
 
 
     public void dispose() {

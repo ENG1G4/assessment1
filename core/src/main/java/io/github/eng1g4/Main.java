@@ -83,7 +83,6 @@ public class Main extends ApplicationAdapter implements InputProcessor {
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height, true);
-        map.updateTileSizeAndOrigin(width, height);
     }
 
     @Override
@@ -140,10 +139,9 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 				map.handleClickRight(worldCoordinates.x, worldCoordinates.y);
 				System.out.println("Right Clicked @ " + screenX + " " + screenY);
 			} else {
-				map.handleClickLeft(worldCoordinates.x, worldCoordinates.y);
-				System.out.println("Left Clicked @ " + screenX + " " + screenY);
-			}
-			System.out.println("Score: " + map.calculateSatisfactionScore());
+                map.handleClickLeft(worldCoordinates.x, worldCoordinates.y);
+                System.out.println("Left Clicked @ " + screenX + " " + screenY);
+            }
             return true;
         }
         return false;
