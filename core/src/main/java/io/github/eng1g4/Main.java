@@ -10,15 +10,13 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.Input.Keys;
 
 
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
-public class Main extends ApplicationAdapter implements InputProcessor {
+public class Main extends ApplicationAdapter {
     private SpriteBatch batch;
     private ShapeRenderer shapeRenderer;
     private Texture image;
@@ -28,6 +26,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
     private GlyphLayout glyphLayout;
     private OrthographicCamera camera;
     Viewport viewport;
+    private Ui ui;
 
     @Override
     public void create() {
@@ -35,9 +34,6 @@ public class Main extends ApplicationAdapter implements InputProcessor {
         shapeRenderer = new ShapeRenderer();
         image = new Texture("libgdx.png");
         isPaused = true;
-
-
-        Gdx.input.setInputProcessor(this);
 
         font = new BitmapFont();
         font.setColor(Color.WHITE);
@@ -56,26 +52,26 @@ public class Main extends ApplicationAdapter implements InputProcessor {
         camera.update();
 
         map = new Map("testgrid.jpg",75, 75,virtualWidth, virtualHeight);
+
+        // Create Ui instance
+        ui = new Ui(viewport, camera, this);
     }
 
-    public void handleInput() {
-        if (Gdx.input.isKeyJustPressed(Keys.P)) {
-            isPaused = !isPaused;
-        }
-
-
-        if (!isPaused) {
-            //
-        }
+    public void togglePause() {
+        isPaused = !isPaused;
     }
+
+
+    public Map getMap() {
+        return map;
+    }
+
     public void drawPauseText(SpriteBatch batch) {
-
-
         String text = "Pause";
         float width = text.length();
         float height = font.getCapHeight();
-        float x = (Gdx.graphics.getWidth() - width) / 2;
-        float y = (Gdx.graphics.getHeight() + height) / 2;
+        float x = (viewport.getWorldWidth() - width) / 2;
+        float y = (viewport.getWorldHeight() + height) / 2;
 
         font.draw(batch, text, x, y);
     }
@@ -83,11 +79,11 @@ public class Main extends ApplicationAdapter implements InputProcessor {
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height, true);
+        ui.resize(width, height);
     }
 
     @Override
     public void render() {
-        handleInput();
         ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
 
         camera.update();
@@ -112,69 +108,16 @@ public class Main extends ApplicationAdapter implements InputProcessor {
         glyphLayout.setText(font, fpsText);
         font.draw(batch, glyphLayout, 10, viewport.getWorldHeight() - 10);
         batch.end();
-    }
 
-
-    @Override
-    public boolean keyDown(int keycode) {
-        System.out.println("keypresssed " + keycode);
-        return false;
-    }
-
-    @Override
-    public boolean keyUp(int keycode) {
-        return false;
-    }
-
-    @Override
-    public boolean keyTyped(char character) {
-        return false;
-    }
-
-    @Override
-    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        if (button == Input.Buttons.LEFT || button == Input.Buttons.RIGHT) {
-            Vector3 worldCoordinates = camera.unproject(new Vector3(screenX, screenY, 0));
-			if (button == Input.Buttons.RIGHT) {
-				map.handleClickRight(worldCoordinates.x, worldCoordinates.y);
-				System.out.println("Right Clicked @ " + screenX + " " + screenY);
-			} else {
-                map.handleClickLeft(worldCoordinates.x, worldCoordinates.y);
-                System.out.println("Left Clicked @ " + screenX + " " + screenY);
-            }
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        return false;
-    }
-
-    @Override
-    public boolean touchCancelled(int screenX, int screenY, int pointer, int button) {
-        return false;
-    }
-
-    @Override
-    public boolean touchDragged(int screenX, int screenY, int pointer) {
-        return false;
-    }
-
-    @Override
-    public boolean mouseMoved(int screenX, int screenY) {
-        return false;
-    }
-
-    @Override
-    public boolean scrolled(float amountX, float amountY) {
-        return false;
+        // Draw the UI
+        ui.draw();
     }
 
     @Override
     public void dispose() {
         batch.dispose();
         image.dispose();
+        ui.getStage().dispose();
+        // Dispose other resources as necessary
     }
 }
