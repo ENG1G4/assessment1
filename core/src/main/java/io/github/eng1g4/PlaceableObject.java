@@ -8,13 +8,13 @@ import com.badlogic.gdx.graphics.Color;
 import java.util.HashMap;
 
 public class PlacableObject {
-    private static HashMap<String, Texture> textureCache = new HashMap<>();
-    private Texture texture;
-    private int width; // in grid tiles
-    private int height; // in grid tiles
+    private static final HashMap<String, Texture> textureCache = new HashMap<>();
+    private final Texture texture;
+    private final int width; // in grid tiles
+    private final int height; // in grid tiles
     private int tileX; // grid position
     private int tileY;
-	private Color color;
+	private final Color color;
 
     public PlacableObject(String texturePath, int width, int height, int x, int y, Color color) {
         // Use texture cache to avoid loading the same texture multiple times
@@ -49,13 +49,6 @@ public class PlacableObject {
 	public Color getColor(){
 		return color;
 	}
-
-    // Copy constructor
-    public PlacableObject(PlacableObject other) {
-        this.texture = other.texture;
-        this.width = other.width;
-        this.height = other.height;
-    }
 
     public void setPosition(int tileX, int tileY) {
         this.tileX = tileX;
