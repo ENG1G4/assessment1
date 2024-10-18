@@ -1,2 +1,5 @@
-package io.github.eng1g4;public interface IBuilding {
+package io.github.eng1g4;
+
+public interface IBuilding {
+
 }

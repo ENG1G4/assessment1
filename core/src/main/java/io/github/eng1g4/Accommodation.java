@@ -1,17 +1,12 @@
 package io.github.eng1g4;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.utils.Disposable;
+public class Accommodation extends Building {
 
-import java.util.ArrayList;
+    // ATTRIBUTION REQUIRED:
+    // https://www.freepik.com/free-vector/isometric-view-modern-office-building_3290417.htm#fromView=search&page=1&position=2&uuid=fb869e6f-9d00-48f9-aec5-e36a75e22a29
+    private static final String TEXTURE_PATH = "accommodation.png";
 
-import static java.lang.Float.max;
-import static java.lang.Math.abs;
-import static java.lang.Math.pow;
-
-public class Accomodation extends  {
-
-    public Accomodation(String texturePath, int width, int height, int x, int y,ArrayList<ArrayList<Float>> studentDensityMap ) {
-        super(texturePath, width, height, x, y, Color.ORANGE);
+    public Accommodation(int x, int y) {
+        super(TEXTURE_PATH, 4, 4, x, y);
     }
 }
