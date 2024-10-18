@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;
@@ -28,6 +29,10 @@ public class Map extends ApplicationAdapter implements Disposable {
     private PlaceableObject objectToPlace;
     private final ArrayList<PlaceableObject> placeableObjects;
 
+    private int selectedBuildingIndex;
+
+    private int[] buildingCount;
+
     public Map(String backgroundTexturePath, int width, int height, float virtualWidth, float virtualHeight) {
         this.width = width;
         this.height = height;
@@ -37,15 +42,16 @@ public class Map extends ApplicationAdapter implements Disposable {
 
         this.virtualWidth = virtualWidth;
         this.virtualHeight = virtualHeight;
-        // Set tile dimensions based on the texture size
         tileWidth = virtualWidth / width;
         tileHeight = tileWidth / 2f;
 
-        // Calculate the origin to center the grid over the texture
         originX = 0;
         originY = 0;
 
-        updateTileSizeAndOrigin(virtualWidth, virtualHeight);
+        buildingCount = new int[5];
+
+
+        setTileSizeAndOrigin();
     }
 
     private void drawOnGrid(Consumer<Diamond> consumer, int x, int y) {
@@ -75,6 +81,8 @@ public class Map extends ApplicationAdapter implements Disposable {
         for (int x = 0; x < this.width; x++) {
             for (int y = 0; y < this.height; y++) {
                 drawOnGrid(diamond -> {
+                    //TODO too many lines are drawn if you think about it
+
                     // Draw lines between the points
                     shapeRenderer.line(diamond.x0(), diamond.y0(), diamond.x1(), diamond.y1());
                     shapeRenderer.line(diamond.x1(), diamond.y1(), diamond.x2(), diamond.y2());
@@ -89,7 +97,7 @@ public class Map extends ApplicationAdapter implements Disposable {
 
     private void colourCell(ShapeRenderer shapeRenderer, int tileX, int tileY, Color color){
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(color); // Semi-transparent red color
+        shapeRenderer.setColor(color);
 
         drawOnGrid(diamond -> {
             // Draw two triangles to fill the diamond
@@ -121,22 +129,23 @@ public class Map extends ApplicationAdapter implements Disposable {
         // Check if the tile is within the map bounds
         if (tileX >= 0 && tileX < width && tileY >= 0 && tileY < height) {
             // Create a new PlacableObject at this tile
-            Accommodation newObject = new Accommodation(tileX, tileY);
-            placeableObjects.add(newObject);
-        }
-    }
 
-    public void handleClickRight(float worldX, float worldY) {
-        // Convert world coordinates to tile coordinates
-        int[] tileCoords = screenToTile(worldX, worldY);
-        int tileX = tileCoords[0];
-        int tileY = tileCoords[1];
+            //TODO check if buildings are not present when making a new one
 
-        // Check if the tile is within the map bounds
-        if (tileX >= 0 && tileX < width && tileY >= 0 && tileY < height) {
-            // Create a new PlacableObject at this tile
-            SportsCentre newObject = new SportsCentre(tileX, tileY);
-            placeableObjects.add(newObject);
+            buildingCount[selectedBuildingIndex] += 1;
+
+            switch (selectedBuildingIndex){
+                case 0:
+                    placeableObjects.add(new Accommodation(tileX, tileY));
+                    break;
+                case 1:
+                    placeableObjects.add(new SportsCentre(tileX, tileY));
+                    break;
+                default:
+                    System.out.println("NO building for that YET");
+
+            }
+
         }
     }
 
@@ -160,6 +169,12 @@ public class Map extends ApplicationAdapter implements Disposable {
 
 
     private int[] screenToTile(float worldX, float worldY) {
+        // This is flawed and does not work after resizing for some reason
+        // Presumably since the map's origin should be recalculated after resizing
+        // But then something else breaks...
+
+        //TODO fix cursor offset near screen edges
+
         // Adjust coordinates relative to origin
         float sX = worldX - originX;
         float sY = worldY - originY;
@@ -181,9 +196,7 @@ public class Map extends ApplicationAdapter implements Disposable {
             return new int[] { tileX, tileY };
         }
     }
-    public void updateTileSizeAndOrigin(float virtualWidth, float virtualHeight) {
-        this.virtualWidth = virtualWidth;
-        this.virtualHeight = virtualHeight;
+    public void setTileSizeAndOrigin() {
 
         tileWidth = 2f * virtualWidth / (width + height);
         tileHeight = tileWidth / 2f; // Ensuring isometric tiles
@@ -192,11 +205,23 @@ public class Map extends ApplicationAdapter implements Disposable {
         float totalGridWidth = ((width + height - 2) * (tileWidth / 2f)) + tileWidth;
         float totalGridHeight = ((width + height - 2) * (tileHeight / 2f)) + tileHeight;
 
-        // Recalculate origin to center the grid over the background texture
         originX = (virtualWidth - totalGridWidth) / 2f + virtualWidth/2f;
         originY = (virtualHeight - totalGridHeight) / 2f;
     }
 
+    public void selectBuilding(int buildingIndex) {
+
+        selectedBuildingIndex = buildingIndex;
+        System.out.println("Building " + buildingIndex + " selected");
+    }
+
+    public int getSelectedBuildingIndex(){
+        return selectedBuildingIndex;
+    }
+
+    public int[] getBuildingCount(){
+        return buildingCount;
+    }
 
     public void dispose() {
         backgroundTexture.dispose();
