@@ -60,6 +60,15 @@ public class Map extends ApplicationAdapter implements Disposable {
             }
         }
 
+        satisfactionMap = new ArrayList<>();
+        for (int i = 0; i < height; i++){
+            satisfactionMap.add(new ArrayList<>());
+            for (int j = 0; j < width; j++){
+                satisfactionMap.get(i).add(0f);
+            }
+        }
+
+
         updateTileSizeAndOrigin(virtualWidth, virtualHeight);
     }
 
@@ -135,13 +144,12 @@ public class Map extends ApplicationAdapter implements Disposable {
         }
     }
 
-    public void handleClick(float worldX, float worldY) {
+    public void handleClickLeft(float worldX, float worldY) {
         // Convert world coordinates to tile coordinates
-        System.out.println("clicked");
         int[] tileCoords = screenToTile(worldX, worldY);
         int tileX = tileCoords[0];
         int tileY = tileCoords[1];
-
+		
         // Check if the tile is within the map bounds
         if (tileX >= 0 && tileX < width && tileY >= 0 && tileY < height) {
             // Create a new PlacableObject at this tile
@@ -150,12 +158,32 @@ public class Map extends ApplicationAdapter implements Disposable {
         }
     }
 
-    private void drawStudentHeatmap(ShapeRenderer shapeRenderer){
+    public void handleClickRight(float worldX, float worldY) {
+        // Convert world coordinates to tile coordinates
+        int[] tileCoords = screenToTile(worldX, worldY);
+        int tileX = tileCoords[0];
+        int tileY = tileCoords[1];
+
+        // Check if the tile is within the map bounds
+        if (tileX >= 0 && tileX < width && tileY >= 0 && tileY < height) {
+            // Create a new PlacableObject at this tile
+            SportsCentre newObject = new SportsCentre("libgdx.png", 3, 2,tileX, tileY, satisfactionMap);
+            placableObjects.add(newObject);
+        }
+    }
+
+
+	// Draws both heatmaps
+    private void drawHeatmaps(ShapeRenderer shapeRenderer){
         for (int y = 0; y < studentDensityMap.size(); y++){
             for (int x = 0; x < studentDensityMap.get(y).size(); x++){
-                float element = studentDensityMap.get(y).get(x);
-                if (element > 0){
-                    colourCell(shapeRenderer, x, y, new Color(element/25f, 0, 0, 1));
+				// density map and satisfaction map should always be the same size so assuming such is fine
+                float elementDensity = studentDensityMap.get(y).get(x);
+                float elementSatisfaction = satisfactionMap.get(y).get(x);
+
+				// Density is red, Satisfaction is Blue
+                if (elementDensity > 0 || elementSatisfaction > 0){
+                    colourCell(shapeRenderer, x, y, new Color(elementDensity/25f, 0, elementSatisfaction/25f, 1f));
                 }
             }
         }
@@ -163,7 +191,7 @@ public class Map extends ApplicationAdapter implements Disposable {
 
     private void drawBuildings(ShapeRenderer shapeRenderer){
         for (PlacableObject building: placableObjects){
-            colourCell(shapeRenderer, building.getTileX(), building.getTileY(), Color.GREEN);
+            colourCell(shapeRenderer, building.getTileX(), building.getTileY(), building.getColor());
         }
     }
 
@@ -173,7 +201,7 @@ public class Map extends ApplicationAdapter implements Disposable {
 //        batch.end();
 
         drawHoweveredCell(shapeRenderer, mouseWorldX, mouseWorldY);
-        drawStudentHeatmap(shapeRenderer);
+        drawHeatmaps(shapeRenderer);
         drawBuildings(shapeRenderer);
         drawGrid(shapeRenderer);
 
@@ -225,6 +253,16 @@ public class Map extends ApplicationAdapter implements Disposable {
     }
 
 
+	public float calculateSatisfactionScore(){
+		float score = 0f;
+
+        for (int y = 0; y < studentDensityMap.size(); y++){
+            for (int x = 0; x < studentDensityMap.get(y).size(); x++){
+				score += studentDensityMap.get(y).get(x) * satisfactionMap.get(y).get(x);
+			}
+		}
+		return score;
+	}
 
 
     public void dispose() {
