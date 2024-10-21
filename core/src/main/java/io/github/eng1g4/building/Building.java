@@ -1,4 +1,4 @@
-package io.github.eng1g4;
+package io.github.eng1g4.building;
 
 public abstract class Building extends PlaceableObject implements IBuilding {
 

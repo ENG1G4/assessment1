@@ -1,19 +1,20 @@
 package io.github.eng1g4;
 
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.utils.Disposable;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-
+import io.github.eng1g4.building.Accommodation;
+import io.github.eng1g4.building.PlaceableObject;
+import io.github.eng1g4.building.SportsCentre;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
-public class Map extends ApplicationAdapter implements Disposable {
+public class Map implements Disposable {
     private final int width;
     private final int height;
     private final Texture backgroundTexture;
@@ -30,7 +31,7 @@ public class Map extends ApplicationAdapter implements Disposable {
 
     private int selectedBuildingIndex;
 
-    private int[] buildingCount;
+    private final int[] buildingCount;
 
     public Map(String backgroundTexturePath, int width, int height, float virtualWidth, float virtualHeight) {
         this.width = width;
