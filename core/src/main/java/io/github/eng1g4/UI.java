@@ -93,7 +93,7 @@ public class UI {
             buildingButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    main.getMap().selectBuilding(buildingType.ordinal());
+                    main.getMap().selectBuilding(buildingType);
 
                 }
             });
@@ -123,7 +123,7 @@ public class UI {
     }
 
     private void createSelectedBuildingLabel(Skin skin) {
-        buildingSelectionIndexLabel = new Label("Selected building: " + BuildingType.cachedValues.get(main.getMap().getSelectedBuildingIndex()).getName(),
+        buildingSelectionIndexLabel = new Label("Selected building: " + main.getMap().getSelectedBuilding().getName(),
             skin);
         buildingSelectionIndexLabel.setSize(200, 25);
         buildingSelectionIndexLabel.setPosition(viewport.getWorldWidth() - 220, viewport.getWorldHeight() - 50);
@@ -135,7 +135,7 @@ public class UI {
             buildingCountText[buildingType.ordinal()]
                 .setText(buildingType.getName() + " count: " + buildingManager.getBuildingCount(buildingType));
         }
-        buildingSelectionIndexLabel.setText("Selected building: " + BuildingType.cachedValues.get(main.getMap().getSelectedBuildingIndex()).getName());
+        buildingSelectionIndexLabel.setText("Selected building: " + main.getMap().getSelectedBuilding().getName());
     }
 
     public void draw() {

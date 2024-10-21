@@ -12,9 +12,13 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.graphics.Color;
 
 
+import com.badlogic.gdx.utils.Timer;
+import com.badlogic.gdx.utils.Timer.Task;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.eng1g4.building.BuildingManager;
+import java.text.DecimalFormat;
+import java.util.concurrent.TimeUnit;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends ApplicationAdapter {
@@ -24,10 +28,10 @@ public class Main extends ApplicationAdapter {
     private boolean isPaused;
     private Map map;
     private BitmapFont font;
-    private GlyphLayout glyphLayout;
     private OrthographicCamera camera;
     Viewport viewport;
     private UI ui;
+    private final CountdownTimer countdownTimer = new CountdownTimer();
 
     @Override
     public void create() {
@@ -38,8 +42,6 @@ public class Main extends ApplicationAdapter {
 
         font = new BitmapFont();
         font.setColor(Color.WHITE);
-
-        glyphLayout = new GlyphLayout();
 
         float virtualHeight = 720; // You can choose any value
         float aspectRatio = 16f / 9f;
@@ -54,14 +56,22 @@ public class Main extends ApplicationAdapter {
 
         BuildingManager buildingManager = new BuildingManager();
 
-        map = new Map("testgrid.jpg",75, 75,virtualWidth, virtualHeight, buildingManager);
+        map = new Map("testgrid.jpg",75, 75, virtualWidth, virtualHeight, buildingManager);
 
         // Create Ui instance
         ui = new UI(viewport, camera, this, buildingManager);
+
     }
 
     public void togglePause() {
         isPaused = !isPaused;
+
+        if (isPaused) {
+            countdownTimer.stop();
+        } else {
+            countdownTimer.start();
+        }
+
     }
 
     public boolean isPaused() {
@@ -109,10 +119,13 @@ public class Main extends ApplicationAdapter {
         }
 
         batch.begin();
+
         int fps = Gdx.graphics.getFramesPerSecond();
-        String fpsText = "FPS: " + fps;
-        glyphLayout.setText(font, fpsText);
+        String glyphText = "FPS: " + fps + "\nTime Remaining: " + countdownTimer.getTimeRemaining();
+        GlyphLayout glyphLayout = new GlyphLayout();
+        glyphLayout.setText(font, glyphText);
         font.draw(batch, glyphLayout, 10, viewport.getWorldHeight() - 10);
+
         batch.end();
 
         // Draw the UI

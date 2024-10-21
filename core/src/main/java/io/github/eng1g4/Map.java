@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.utils.Disposable;
+import io.github.eng1g4.building.BuildingType;
 import io.github.eng1g4.building.impl.Accommodation;
 import io.github.eng1g4.building.BuildingManager;
 import io.github.eng1g4.building.PlaceableObject;
@@ -32,7 +33,7 @@ public class Map implements Disposable {
     private PlaceableObject objectToPlace;
     private final ArrayList<PlaceableObject> placeableObjects;
 
-    private int selectedBuildingIndex;
+    private BuildingType selectedBuilding = BuildingType.ACCOMMODATION;
     private final BuildingManager buildingManager;
 
     public Map(String backgroundTexturePath, int width, int height, float virtualWidth, float virtualHeight, BuildingManager buildingManager) {
@@ -133,17 +134,17 @@ public class Map implements Disposable {
 
             //TODO check if buildings are not present when making a new one
 
-            switch (selectedBuildingIndex) {
-                case 0:
+            switch (selectedBuilding) {
+                case ACCOMMODATION:
                     placeableObjects.add(new Accommodation(tileX, tileY));
                     break;
-                case 1:
+                case SPORTS_CENTRE:
                     placeableObjects.add(new SportsCentre(tileX, tileY));
                     break;
-                case 2:
+                case LECTURE_THEATRE:
                     placeableObjects.add(new LectureTheatre(tileX, tileY));
                     break;
-                case 3:
+                case RESTAURANT:
                     placeableObjects.add(new Restaurant(tileX, tileY));
                     break;
                 default:
@@ -151,7 +152,7 @@ public class Map implements Disposable {
                     return;
             }
 
-            buildingManager.registerBuilding(selectedBuildingIndex);
+            buildingManager.registerBuilding(selectedBuilding);
 
         }
     }
@@ -216,14 +217,13 @@ public class Map implements Disposable {
         originY = (virtualHeight - totalGridHeight) / 2f;
     }
 
-    public void selectBuilding(int buildingIndex) {
-
-        selectedBuildingIndex = buildingIndex;
-        System.out.println("Building " + buildingIndex + " selected");
+    public void selectBuilding(BuildingType buildingType) {
+        selectedBuilding = buildingType;
+        System.out.println("Building " + buildingType + " selected");
     }
 
-    public int getSelectedBuildingIndex(){
-        return selectedBuildingIndex;
+    public BuildingType getSelectedBuilding(){
+        return selectedBuilding;
     }
 
     public void dispose() {
