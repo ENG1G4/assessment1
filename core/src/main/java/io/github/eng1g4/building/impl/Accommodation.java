@@ -1,4 +1,7 @@
-package io.github.eng1g4.building;
+package io.github.eng1g4.building.impl;
+
+import io.github.eng1g4.building.Building;
+import io.github.eng1g4.building.BuildingType;
 
 public class Accommodation extends Building {
 

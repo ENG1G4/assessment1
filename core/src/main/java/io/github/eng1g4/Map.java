@@ -8,10 +8,11 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.utils.Disposable;
-import io.github.eng1g4.building.Accommodation;
+import io.github.eng1g4.building.impl.Accommodation;
 import io.github.eng1g4.building.BuildingManager;
 import io.github.eng1g4.building.PlaceableObject;
-import io.github.eng1g4.building.SportsCentre;
+import io.github.eng1g4.building.impl.LectureTheatre;
+import io.github.eng1g4.building.impl.SportsCentre;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
@@ -131,16 +132,19 @@ public class Map implements Disposable {
 
             //TODO check if buildings are not present when making a new one
 
-            switch (selectedBuildingIndex){
+            switch (selectedBuildingIndex) {
                 case 0:
                     placeableObjects.add(new Accommodation(tileX, tileY));
                     break;
                 case 1:
                     placeableObjects.add(new SportsCentre(tileX, tileY));
                     break;
+                case 2:
+                    placeableObjects.add(new LectureTheatre(tileX, tileY));
+                    break;
                 default:
                     System.out.println("NO building for that YET");
-
+                    return;
             }
 
             buildingManager.registerBuilding(selectedBuildingIndex);
