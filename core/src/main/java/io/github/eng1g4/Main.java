@@ -14,6 +14,7 @@ import com.badlogic.gdx.graphics.Color;
 
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import io.github.eng1g4.building.BuildingManager;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends ApplicationAdapter {
@@ -51,10 +52,12 @@ public class Main extends ApplicationAdapter {
         camera.position.set(virtualWidth / 2f, virtualHeight / 2f, 0);
         camera.update();
 
-        map = new Map("testgrid.jpg",75, 75,virtualWidth, virtualHeight);
+        BuildingManager buildingManager = new BuildingManager();
+
+        map = new Map("testgrid.jpg",75, 75,virtualWidth, virtualHeight, buildingManager);
 
         // Create Ui instance
-        ui = new UI(viewport, camera, this);
+        ui = new UI(viewport, camera, this, buildingManager);
     }
 
     public void togglePause() {

@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.utils.Disposable;
 import io.github.eng1g4.building.Accommodation;
+import io.github.eng1g4.building.BuildingManager;
 import io.github.eng1g4.building.PlaceableObject;
 import io.github.eng1g4.building.SportsCentre;
 import java.util.ArrayList;
@@ -30,12 +31,13 @@ public class Map implements Disposable {
     private final ArrayList<PlaceableObject> placeableObjects;
 
     private int selectedBuildingIndex;
+    private final BuildingManager buildingManager;
 
-    private final int[] buildingCount;
-
-    public Map(String backgroundTexturePath, int width, int height, float virtualWidth, float virtualHeight) {
+    public Map(String backgroundTexturePath, int width, int height, float virtualWidth, float virtualHeight, BuildingManager buildingManager) {
         this.width = width;
         this.height = height;
+        this.buildingManager = buildingManager;
+
         backgroundTexture = new Texture(Gdx.files.internal(backgroundTexturePath));
 
         placeableObjects = new ArrayList<>();
@@ -47,9 +49,6 @@ public class Map implements Disposable {
 
         originX = 0;
         originY = 0;
-
-        buildingCount = new int[5];
-
 
         setTileSizeAndOrigin();
     }
@@ -132,8 +131,6 @@ public class Map implements Disposable {
 
             //TODO check if buildings are not present when making a new one
 
-            buildingCount[selectedBuildingIndex] += 1;
-
             switch (selectedBuildingIndex){
                 case 0:
                     placeableObjects.add(new Accommodation(tileX, tileY));
@@ -145,6 +142,8 @@ public class Map implements Disposable {
                     System.out.println("NO building for that YET");
 
             }
+
+            buildingManager.registerBuilding(selectedBuildingIndex);
 
         }
     }
@@ -217,10 +216,6 @@ public class Map implements Disposable {
 
     public int getSelectedBuildingIndex(){
         return selectedBuildingIndex;
-    }
-
-    public int[] getBuildingCount(){
-        return buildingCount;
     }
 
     public void dispose() {

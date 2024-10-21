@@ -12,6 +12,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.math.Vector3;
+import io.github.eng1g4.building.BuildingManager;
+import io.github.eng1g4.building.BuildingType;
 
 public class UI {
     private final Stage stage;
@@ -20,11 +22,13 @@ public class UI {
     private final Main main; // This could be bad practice
     private final Viewport viewport;
     private final Camera camera;
+    private final BuildingManager buildingManager;
 
-    public UI(Viewport viewport, Camera camera, Main main) {
+    public UI(Viewport viewport, Camera camera, Main main, BuildingManager buildingManager) {
         this.main = main;
         this.viewport = viewport;
         this.camera = camera;
+        this.buildingManager = buildingManager;
 
         stage = new Stage(viewport);
 
@@ -79,18 +83,17 @@ public class UI {
         float startX = (viewport.getWorldWidth() - totalWidth) / 2f;
         float y = 10;
 
-        for (int i = 0; i < 5; i++) {
-            TextButton buildingButton = new TextButton("Building " + (i + 1), skin);
+        for (BuildingType buildingType: BuildingType.cachedValues) {
+            TextButton buildingButton = new TextButton(buildingType.getName(), skin);
             buildingButton.setSize(buttonWidth, buttonHeight);
 
-            float x = startX + i * (buttonWidth + spacing);
+            float x = startX + buildingType.ordinal() * (buttonWidth + spacing);
             buildingButton.setPosition(x, y);
 
-            final int index = i;
             buildingButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    main.getMap().selectBuilding(index);
+                    main.getMap().selectBuilding(buildingType.ordinal());
 
                 }
             });
@@ -106,41 +109,38 @@ public class UI {
         float startY = viewport.getWorldHeight() - 100;
         float x = 10;
 
-        int[] buildingCount = main.getMap().getBuildingCount();
-
-        for (int i = 0; i < 5; i++) {
-            Label buildingLabel = new Label("Building "+ (i + 1) + " count: " + buildingCount[i],
+        for (BuildingType buildingType: BuildingType.cachedValues) {
+            Label buildingLabel = new Label(buildingType.getName() + " count: " + buildingManager.getBuildingCount(buildingType),
                 skin);
             buildingLabel.setSize(labelWidth, labelHeight);
 
-            float y = startY - i * (labelSpacing + labelHeight);
+            float y = startY - buildingType.ordinal() * (labelSpacing + labelHeight);
             buildingLabel.setPosition(x, y);
 
             stage.addActor(buildingLabel);
-            buildingCountText[i] = buildingLabel;
+            buildingCountText[buildingType.ordinal()] = buildingLabel;
         }
     }
 
     private void createSelectedBuildingLabel(Skin skin) {
-        buildingSelectionIndexLabel = new Label("Selected building: " + (main.getMap().getSelectedBuildingIndex() + 1),
+        buildingSelectionIndexLabel = new Label("Selected building: " + BuildingType.cachedValues.get(main.getMap().getSelectedBuildingIndex()).getName(),
             skin);
         buildingSelectionIndexLabel.setSize(200, 25);
         buildingSelectionIndexLabel.setPosition(viewport.getWorldWidth() - 220, viewport.getWorldHeight() - 50);
         stage.addActor(buildingSelectionIndexLabel);
     }
 
-    public void drawBuildingCount() {
-        int[] buildingCount = main.getMap().getBuildingCount();
-        for (int i = 0; i < 5; i++) {
-            buildingCountText[i].setText("Building " + (i + 1) + " count: " + buildingCount[i]);
+    public void drawBuildingLabels() {
+        for (BuildingType buildingType: BuildingType.cachedValues) {
+            buildingCountText[buildingType.ordinal()]
+                .setText(buildingType.getName() + " count: " + buildingManager.getBuildingCount(buildingType));
         }
-        buildingSelectionIndexLabel.setText("Selected building: " + (main.getMap().getSelectedBuildingIndex() + 1));
-
+        buildingSelectionIndexLabel.setText("Selected building: " + BuildingType.cachedValues.get(main.getMap().getSelectedBuildingIndex()).getName());
     }
 
     public void draw() {
         stage.act();
-        drawBuildingCount();
+        drawBuildingLabels();
         stage.draw();
     }
 
