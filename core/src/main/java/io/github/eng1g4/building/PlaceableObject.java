@@ -1,10 +1,11 @@
-package io.github.eng1g4;
+package io.github.eng1g4.building;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.Color;
 
+import com.badlogic.gdx.graphics.glutils.FileTextureData;
 import java.util.HashMap;
 
 public class PlaceableObject {
@@ -63,6 +64,7 @@ public class PlaceableObject {
     }
 
     public void dispose() {
-
+        textureCache.remove(((FileTextureData) texture.getTextureData()).getFileHandle().path());
+        texture.dispose();
     }
 }

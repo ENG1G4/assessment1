@@ -1,20 +1,21 @@
 package io.github.eng1g4;
 
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.utils.Disposable;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.utils.viewport.Viewport;
-
+import io.github.eng1g4.building.Accommodation;
+import io.github.eng1g4.building.BuildingManager;
+import io.github.eng1g4.building.PlaceableObject;
+import io.github.eng1g4.building.SportsCentre;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
-public class Map extends ApplicationAdapter implements Disposable {
+public class Map implements Disposable {
     private final int width;
     private final int height;
     private final Texture backgroundTexture;
@@ -30,12 +31,13 @@ public class Map extends ApplicationAdapter implements Disposable {
     private final ArrayList<PlaceableObject> placeableObjects;
 
     private int selectedBuildingIndex;
+    private final BuildingManager buildingManager;
 
-    private int[] buildingCount;
-
-    public Map(String backgroundTexturePath, int width, int height, float virtualWidth, float virtualHeight) {
+    public Map(String backgroundTexturePath, int width, int height, float virtualWidth, float virtualHeight, BuildingManager buildingManager) {
         this.width = width;
         this.height = height;
+        this.buildingManager = buildingManager;
+
         backgroundTexture = new Texture(Gdx.files.internal(backgroundTexturePath));
 
         placeableObjects = new ArrayList<>();
@@ -47,9 +49,6 @@ public class Map extends ApplicationAdapter implements Disposable {
 
         originX = 0;
         originY = 0;
-
-        buildingCount = new int[5];
-
 
         setTileSizeAndOrigin();
     }
@@ -108,7 +107,7 @@ public class Map extends ApplicationAdapter implements Disposable {
         shapeRenderer.end();
     }
 
-    private void drawHoweveredCell(ShapeRenderer shapeRenderer, float mouseWorldX, float mouseWorldY) {
+    private void drawHoveredCell(ShapeRenderer shapeRenderer, float mouseWorldX, float mouseWorldY) {
         // Determine which tile the mouse is over
         int[] hoveredTile = screenToTile(mouseWorldX, mouseWorldY);
         int hoverX = hoveredTile[0];
@@ -132,8 +131,6 @@ public class Map extends ApplicationAdapter implements Disposable {
 
             //TODO check if buildings are not present when making a new one
 
-            buildingCount[selectedBuildingIndex] += 1;
-
             switch (selectedBuildingIndex){
                 case 0:
                     placeableObjects.add(new Accommodation(tileX, tileY));
@@ -145,6 +142,8 @@ public class Map extends ApplicationAdapter implements Disposable {
                     System.out.println("NO building for that YET");
 
             }
+
+            buildingManager.registerBuilding(selectedBuildingIndex);
 
         }
     }
@@ -162,7 +161,7 @@ public class Map extends ApplicationAdapter implements Disposable {
 
     public void draw(SpriteBatch batch, ShapeRenderer shapeRenderer, float mouseWorldX, float mouseWorldY) {
         drawGrid(shapeRenderer);
-        drawHoweveredCell(shapeRenderer, mouseWorldX, mouseWorldY);
+        drawHoveredCell(shapeRenderer, mouseWorldX, mouseWorldY);
 
         drawBuildings(batch);
     }
@@ -217,10 +216,6 @@ public class Map extends ApplicationAdapter implements Disposable {
 
     public int getSelectedBuildingIndex(){
         return selectedBuildingIndex;
-    }
-
-    public int[] getBuildingCount(){
-        return buildingCount;
     }
 
     public void dispose() {
