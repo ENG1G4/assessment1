@@ -12,6 +12,7 @@ import io.github.eng1g4.building.impl.Accommodation;
 import io.github.eng1g4.building.BuildingManager;
 import io.github.eng1g4.building.PlaceableObject;
 import io.github.eng1g4.building.impl.LectureTheatre;
+import io.github.eng1g4.building.impl.Restaurant;
 import io.github.eng1g4.building.impl.SportsCentre;
 import java.util.ArrayList;
 import java.util.function.Consumer;
@@ -141,6 +142,9 @@ public class Map implements Disposable {
                     break;
                 case 2:
                     placeableObjects.add(new LectureTheatre(tileX, tileY));
+                    break;
+                case 3:
+                    placeableObjects.add(new Restaurant(tileX, tileY));
                     break;
                 default:
                     System.out.println("NO building for that YET");

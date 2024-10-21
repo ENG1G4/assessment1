@@ -8,6 +8,7 @@ public enum BuildingType {
     ACCOMMODATION("Accommodation"),
     SPORTS_CENTRE("Sports Centre"),
     LECTURE_THEATRE("Lecture Theatre"),
+    RESTAURANT("Restaurant"),
 
     // Use this constant to get the number of buildings. Its ordinal will always be the number of
     // constants above it.
