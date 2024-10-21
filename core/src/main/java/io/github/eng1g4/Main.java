@@ -26,7 +26,7 @@ public class Main extends ApplicationAdapter {
     private GlyphLayout glyphLayout;
     private OrthographicCamera camera;
     Viewport viewport;
-    private Ui ui;
+    private UI ui;
 
     @Override
     public void create() {
@@ -54,13 +54,16 @@ public class Main extends ApplicationAdapter {
         map = new Map("testgrid.jpg",75, 75,virtualWidth, virtualHeight);
 
         // Create Ui instance
-        ui = new Ui(viewport, camera, this);
+        ui = new UI(viewport, camera, this);
     }
 
     public void togglePause() {
         isPaused = !isPaused;
     }
 
+    public boolean isPaused() {
+        return this.isPaused;
+    }
 
     public Map getMap() {
         return map;

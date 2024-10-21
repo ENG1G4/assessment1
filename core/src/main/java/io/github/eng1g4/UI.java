@@ -13,31 +13,53 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.math.Vector3;
 
-public class Ui {
-    private Stage stage;
-    private Skin skin;
-    private TextButton pauseButton;
-    private TextButton[] buildingButtons;
-    private Label[] buildingCountText;
-    private Label selectedBuildingLabel;
+public class UI {
+    private final Stage stage;
+    private final Label[] buildingCountText;
     private Label buildingSelectionIndexLabel;
-    private Main main; // This could be bad practice
-    private InputMultiplexer inputMultiplexer;
-    private Viewport viewport;
-    private Camera camera;
+    private final Main main; // This could be bad practice
+    private final Viewport viewport;
+    private final Camera camera;
 
-    public Ui(Viewport viewport, Camera camera, Main main) {
+    public UI(Viewport viewport, Camera camera, Main main) {
         this.main = main;
         this.viewport = viewport;
         this.camera = camera;
 
         stage = new Stage(viewport);
-        skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+
+        Skin skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+
+        // Create pause button
+        createPauseButton(skin);
+
+        // Create building selection buttons
+        buildingCountText = new Label[5];
+        createBuildingButtons(skin);
+
+        // Create the "building x count: y" labels
+        createBuildingCountLabels(skin);
+
+        // Create the "Selected building: " label
+        createSelectedBuildingLabel(skin);
 
 
-        pauseButton = new TextButton("Pause", skin);
+        // Handle game inputs. Ui stage is required to be inputprocessor, so multiplexer
+        // is needed if other inputs are added.
+         InputMultiplexer inputMultiplexer = new InputMultiplexer();
+
+        // Add the Stage's input processor first, so it has priority
+        inputMultiplexer.addProcessor(stage);
+
+        inputMultiplexer.addProcessor(new GameInputProcessor());
+
+        // Set the InputMultiplexer as the input processor
+        Gdx.input.setInputProcessor(inputMultiplexer);
+    }
+
+    private void createPauseButton(Skin skin) {
+        TextButton pauseButton = new TextButton("Pause", skin);
         pauseButton.setPosition(10, viewport.getWorldHeight() - pauseButton.getHeight() - 10);
-
 
         pauseButton.addListener(new ChangeListener() {
             @Override
@@ -47,9 +69,9 @@ public class Ui {
         });
 
         stage.addActor(pauseButton);
+    }
 
-        buildingButtons = new TextButton[5];
-
+    private void createBuildingButtons(Skin skin) {
         float buttonWidth = 100;
         float buttonHeight = 50;
         float spacing = 10;
@@ -58,14 +80,14 @@ public class Ui {
         float y = 10;
 
         for (int i = 0; i < 5; i++) {
-            //final int index is needed for the listener later
-            final int index = i;
-            buildingButtons[i] = new TextButton("Building " + (i + 1), skin);
-            buildingButtons[i].setSize(buttonWidth, buttonHeight);
-            float x = startX + i * (buttonWidth + spacing);
-            buildingButtons[i].setPosition(x, y);
+            TextButton buildingButton = new TextButton("Building " + (i + 1), skin);
+            buildingButton.setSize(buttonWidth, buttonHeight);
 
-            buildingButtons[i].addListener(new ChangeListener() {
+            float x = startX + i * (buttonWidth + spacing);
+            buildingButton.setPosition(x, y);
+
+            final int index = i;
+            buildingButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     main.getMap().selectBuilding(index);
@@ -73,11 +95,11 @@ public class Ui {
                 }
             });
 
-            stage.addActor(buildingButtons[i]);
+            stage.addActor(buildingButton);
         }
+    }
 
-        buildingCountText = new Label[5];
-
+    private void createBuildingCountLabels(Skin skin) {
         float labelWidth = 150;
         float labelHeight = 25;
         float labelSpacing = 5;
@@ -87,35 +109,27 @@ public class Ui {
         int[] buildingCount = main.getMap().getBuildingCount();
 
         for (int i = 0; i < 5; i++) {
-            buildingCountText[i] = new Label("Building "+ (i + 1) + " count: " + buildingCount[i], skin);
-            buildingCountText[i].setSize(labelWidth, labelHeight);
-            y = startY - i * (labelSpacing + labelHeight);
-            buildingCountText[i].setPosition(x, y);
-            stage.addActor(buildingCountText[i]);
-        }
+            Label buildingLabel = new Label("Building "+ (i + 1) + " count: " + buildingCount[i],
+                skin);
+            buildingLabel.setSize(labelWidth, labelHeight);
 
-        buildingSelectionIndexLabel = new Label("Selected building: " + (main.getMap().getSelectedBuildingIndex() + 1), skin );
+            float y = startY - i * (labelSpacing + labelHeight);
+            buildingLabel.setPosition(x, y);
+
+            stage.addActor(buildingLabel);
+            buildingCountText[i] = buildingLabel;
+        }
+    }
+
+    private void createSelectedBuildingLabel(Skin skin) {
+        buildingSelectionIndexLabel = new Label("Selected building: " + (main.getMap().getSelectedBuildingIndex() + 1),
+            skin);
         buildingSelectionIndexLabel.setSize(200, 25);
         buildingSelectionIndexLabel.setPosition(viewport.getWorldWidth() - 220, viewport.getWorldHeight() - 50);
         stage.addActor(buildingSelectionIndexLabel);
-
-
-
-
-        // Ui stage is required to be inputprocessor, so multiplexer is needed if
-        // other inputs are added
-        inputMultiplexer = new InputMultiplexer();
-
-        // Add the Stage's input processor first so it has priority
-        inputMultiplexer.addProcessor(stage);
-
-        inputMultiplexer.addProcessor(new GameInputProcessor());
-
-        // Set the InputMultiplexer as the input processor
-        Gdx.input.setInputProcessor(inputMultiplexer);
     }
 
-    public void updateBuildingCount(){
+    public void drawBuildingCount() {
         int[] buildingCount = main.getMap().getBuildingCount();
         for (int i = 0; i < 5; i++) {
             buildingCountText[i].setText("Building " + (i + 1) + " count: " + buildingCount[i]);
@@ -126,7 +140,7 @@ public class Ui {
 
     public void draw() {
         stage.act();
-        updateBuildingCount();
+        drawBuildingCount();
         stage.draw();
     }
 
@@ -161,16 +175,16 @@ public class Ui {
 
         @Override
         public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-            if (button == com.badlogic.gdx.Input.Buttons.LEFT || button == com.badlogic.gdx.Input.Buttons.RIGHT) {
+
+            if (main.isPaused()) return false;
+
+            if (button == com.badlogic.gdx.Input.Buttons.LEFT) {
                 Vector3 worldCoordinates = camera.unproject(new Vector3(screenX, screenY, 0));
-                if (button == com.badlogic.gdx.Input.Buttons.LEFT) {
-                    main.getMap().handleClickLeft(worldCoordinates.x, worldCoordinates.y);
-                    System.out.println("Left Clicked @ " + screenX + " " + screenY);
-                }
-//                System.out.println("Score: " + main.getMap().calculateSatisfactionScore());
-//                Artifact of the past...
+                main.getMap().handleClickLeft(worldCoordinates.x, worldCoordinates.y);
+                System.out.println("Left Clicked @ " + screenX + " " + screenY);
                 return true;
             }
+
             return false;
         }
 

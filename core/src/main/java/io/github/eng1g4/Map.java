@@ -9,7 +9,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.utils.viewport.Viewport;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;
@@ -108,7 +107,7 @@ public class Map extends ApplicationAdapter implements Disposable {
         shapeRenderer.end();
     }
 
-    private void drawHoweveredCell(ShapeRenderer shapeRenderer, float mouseWorldX, float mouseWorldY) {
+    private void drawHoveredCell(ShapeRenderer shapeRenderer, float mouseWorldX, float mouseWorldY) {
         // Determine which tile the mouse is over
         int[] hoveredTile = screenToTile(mouseWorldX, mouseWorldY);
         int hoverX = hoveredTile[0];
@@ -162,7 +161,7 @@ public class Map extends ApplicationAdapter implements Disposable {
 
     public void draw(SpriteBatch batch, ShapeRenderer shapeRenderer, float mouseWorldX, float mouseWorldY) {
         drawGrid(shapeRenderer);
-        drawHoweveredCell(shapeRenderer, mouseWorldX, mouseWorldY);
+        drawHoveredCell(shapeRenderer, mouseWorldX, mouseWorldY);
 
         drawBuildings(batch);
     }
