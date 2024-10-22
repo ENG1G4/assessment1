@@ -25,13 +25,14 @@ public class Main extends ApplicationAdapter {
     private SpriteBatch batch;
     private ShapeRenderer shapeRenderer;
     private Texture image;
+    private boolean gameOver;
     private boolean isPaused;
     private Map map;
     private BitmapFont font;
     private OrthographicCamera camera;
     Viewport viewport;
     private UI ui;
-    private final CountdownTimer countdownTimer = new CountdownTimer();
+    private CountdownTimer countdownTimer;
 
     @Override
     public void create() {
@@ -39,6 +40,7 @@ public class Main extends ApplicationAdapter {
         shapeRenderer = new ShapeRenderer();
         image = new Texture("libgdx.png");
         isPaused = true;
+        countdownTimer = new CountdownTimer(this);
 
         font = new BitmapFont();
         font.setColor(Color.WHITE);
@@ -78,18 +80,43 @@ public class Main extends ApplicationAdapter {
         return this.isPaused;
     }
 
+    public void endGame() {
+        this.gameOver = true;
+    }
+
     public Map getMap() {
         return map;
     }
 
-    public void drawPauseText(SpriteBatch batch) {
-        String text = "Pause";
+    private void drawText(String text) {
         float width = text.length();
         float height = font.getCapHeight();
         float x = (viewport.getWorldWidth() - width) / 2;
         float y = (viewport.getWorldHeight() + height) / 2;
 
+        this.batch.begin();
         font.draw(batch, text, x, y);
+        this.batch.end();
+    }
+
+    private void drawPauseMenu() {
+       drawText("Paused");
+       drawTimeRemaining();
+    }
+
+    private void drawGameOverScreen() {
+        drawText("Game Over");
+    }
+
+    private void drawTimeRemaining() {
+        int fps = Gdx.graphics.getFramesPerSecond();
+        String glyphText = "FPS: " + fps + "\nTime Remaining: " + countdownTimer.getTimeRemaining();
+        GlyphLayout glyphLayout = new GlyphLayout();
+        glyphLayout.setText(font, glyphText);
+
+        batch.begin();
+        font.draw(batch, glyphLayout, 10, viewport.getWorldHeight() - 10);
+        batch.end();
     }
 
     @Override
@@ -110,23 +137,22 @@ public class Main extends ApplicationAdapter {
         Vector3 mouseScreenCoords = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
         Vector3 mouseWorldCoords = camera.unproject(mouseScreenCoords);
 
-        if (!isPaused){
-            map.draw(batch, shapeRenderer, mouseWorldCoords.x, mouseWorldCoords.y);
-        } else {
-            batch.begin();
-            drawPauseText(batch);
-            batch.end();
+        // Draw game over screen
+        if (this.gameOver) {
+            drawGameOverScreen();
+            return;
         }
 
-        batch.begin();
+        // Draw pause menu
+        if (this.isPaused) {
+            drawPauseMenu();
+            return;
+        }
 
-        int fps = Gdx.graphics.getFramesPerSecond();
-        String glyphText = "FPS: " + fps + "\nTime Remaining: " + countdownTimer.getTimeRemaining();
-        GlyphLayout glyphLayout = new GlyphLayout();
-        glyphLayout.setText(font, glyphText);
-        font.draw(batch, glyphLayout, 10, viewport.getWorldHeight() - 10);
+        // Draw map
+        map.draw(batch, shapeRenderer, mouseWorldCoords.x, mouseWorldCoords.y);
 
-        batch.end();
+        drawTimeRemaining();
 
         // Draw the UI
         ui.draw();

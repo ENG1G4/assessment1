@@ -7,18 +7,24 @@ public class CountdownTimer {
 
     // Time remaining in the game, in seconds
     private int timeRemaining = 300;
-    private Timer.Task countdownTimer;
+    private final Timer.Task countdownTimer;
 
-    public CountdownTimer() { }
-
-    public void start() {
-        // Decrement timeRemaining after 1 second, every 1 second, timeRemaining times.
-        this.countdownTimer = Timer.schedule(new Task() {
+    public CountdownTimer(Main main) {
+        this.countdownTimer = new Task() {
             @Override
             public void run() {
                 timeRemaining -= 1;
+
+                if (timeRemaining == 0) {
+                    main.endGame();
+                }
             }
-        }, 1, 1, this.timeRemaining);
+        };
+    }
+
+    public void start() {
+        // Decrement timeRemaining after 1 second, every 1 second, timeRemaining times.
+        Timer.schedule(this.countdownTimer, 1, 1, this.timeRemaining);
     }
 
     public void stop() {
