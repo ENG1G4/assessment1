@@ -1,6 +1,7 @@
 package io.github.eng1g4;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Camera;
@@ -161,11 +162,17 @@ public class UI {
 
         @Override
         public boolean keyUp(int keycode) {
-            if (keycode == com.badlogic.gdx.Input.Keys.P) {
-                main.togglePause();
-                return true;
+          return switch (keycode) {
+            case Keys.P -> {
+              main.togglePause();
+              yield true;
             }
-            return false;
+            case Keys.C -> {
+              main.toggleCredits();
+              yield true;
+            }
+            default -> false;
+          };
         }
 
         @Override

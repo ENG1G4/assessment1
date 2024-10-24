@@ -1,24 +1,20 @@
 package io.github.eng1g4;
 
-import com.badlogic.gdx.*;
+import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.BitmapFont.Glyph;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.graphics.Color;
-
-
-import com.badlogic.gdx.utils.Timer;
-import com.badlogic.gdx.utils.Timer.Task;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.eng1g4.building.BuildingManager;
-import java.text.DecimalFormat;
-import java.util.concurrent.TimeUnit;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends ApplicationAdapter {
@@ -27,12 +23,18 @@ public class Main extends ApplicationAdapter {
     private Texture image;
     private boolean gameOver;
     private boolean isPaused;
+    private boolean showCredits;
     private Map map;
     private BitmapFont font;
     private OrthographicCamera camera;
     Viewport viewport;
     private UI ui;
     private CountdownTimer countdownTimer;
+
+    // Calculated text layouts
+    private GlyphLayout pauseMenuTextLayout;
+    private GlyphLayout gameOverTextLayout;
+    private GlyphLayout creditsTextLayout;
 
     @Override
     public void create() {
@@ -63,6 +65,17 @@ public class Main extends ApplicationAdapter {
         // Create Ui instance
         ui = new UI(viewport, camera, this, buildingManager);
 
+        // Calculate pause menu text once, not every frame
+        this.pauseMenuTextLayout = getGlyphLayout("Paused");
+        this.gameOverTextLayout = getGlyphLayout("Game Over.");
+        this.creditsTextLayout = getGlyphLayout("\n\nAccommodation, Lecture theatre, Restaurant and Sports centre assets designed by Freepik.");
+
+    }
+
+    private GlyphLayout getGlyphLayout(String text) {
+        GlyphLayout glyphLayout = new GlyphLayout();
+        glyphLayout.setText(this.font, text);
+        return glyphLayout;
     }
 
     public void togglePause() {
@@ -88,34 +101,39 @@ public class Main extends ApplicationAdapter {
         return map;
     }
 
-    private void drawText(String text) {
-        float width = text.length();
-        float height = font.getCapHeight();
-        float x = (viewport.getWorldWidth() - width) / 2;
-        float y = (viewport.getWorldHeight() + height) / 2;
+    private void drawCentredGlyphLayout(GlyphLayout glyphLayout) {
+        float x = (viewport.getWorldWidth() - glyphLayout.width) / 2;
+        float y = (viewport.getWorldHeight() + glyphLayout.height) / 2;
 
         this.batch.begin();
-        font.draw(batch, text, x, y);
+        font.draw(batch, glyphLayout, x, y);
         this.batch.end();
     }
 
     private void drawPauseMenu() {
-       drawText("Paused");
+       drawCentredGlyphLayout(this.pauseMenuTextLayout);
        drawTimeRemaining();
+
+       if (showCredits) {
+           drawCentredGlyphLayout(this.creditsTextLayout);
+       }
+
+    }
+
+    public void toggleCredits() {
+        this.showCredits = !this.showCredits;
     }
 
     private void drawGameOverScreen() {
-        drawText("Game Over");
+        drawCentredGlyphLayout(this.gameOverTextLayout);
     }
 
     private void drawTimeRemaining() {
         int fps = Gdx.graphics.getFramesPerSecond();
-        String glyphText = "FPS: " + fps + "\nTime Remaining: " + countdownTimer.getTimeRemaining();
-        GlyphLayout glyphLayout = new GlyphLayout();
-        glyphLayout.setText(font, glyphText);
+        String text = "FPS: " + fps + "\nTime Remaining: " + countdownTimer.getTimeRemaining();
 
         batch.begin();
-        font.draw(batch, glyphLayout, 10, viewport.getWorldHeight() - 10);
+        font.draw(batch, text, 10, viewport.getWorldHeight() - 10);
         batch.end();
     }
 
