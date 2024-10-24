@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Disposable;
 import io.github.eng1g4.building.BuildingType;
 import io.github.eng1g4.building.impl.Accommodation;
@@ -129,32 +130,41 @@ public class Map implements Disposable {
         int tileY = tileCoords[1];
 
         // Check if the tile is within the map bounds
-        if (tileX >= 0 && tileX < width && tileY >= 0 && tileY < height) {
-            // Create a new PlacableObject at this tile
-
-            //TODO check if buildings are not present when making a new one
-
-            switch (selectedBuilding) {
-                case ACCOMMODATION:
-                    placeableObjects.add(new Accommodation(tileX, tileY));
-                    break;
-                case SPORTS_CENTRE:
-                    placeableObjects.add(new SportsCentre(tileX, tileY));
-                    break;
-                case LECTURE_THEATRE:
-                    placeableObjects.add(new LectureTheatre(tileX, tileY));
-                    break;
-                case RESTAURANT:
-                    placeableObjects.add(new Restaurant(tileX, tileY));
-                    break;
-                default:
-                    System.out.println("NO building for that YET");
-                    return;
-            }
-
-            buildingManager.registerBuilding(selectedBuilding);
-
+        if (! (tileX >= 0 && tileX < width && tileY >= 0 && tileY < height)) {
+            return;
         }
+
+        // Create a new PlacableObject at this tile
+
+        // Check if buildings are not present when making a new one
+        Rectangle newBuildingRectangle = new Rectangle(tileX, tileY, 4, 4);
+        for (PlaceableObject placeableObject : this.placeableObjects) {
+            if (placeableObject.overlaps(newBuildingRectangle)) {
+                return;
+            }
+        }
+
+        // Create new building
+        switch (selectedBuilding) {
+            case ACCOMMODATION:
+                placeableObjects.add(new Accommodation(tileX, tileY));
+                break;
+            case SPORTS_CENTRE:
+                placeableObjects.add(new SportsCentre(tileX, tileY));
+                break;
+            case LECTURE_THEATRE:
+                placeableObjects.add(new LectureTheatre(tileX, tileY));
+                break;
+            case RESTAURANT:
+                placeableObjects.add(new Restaurant(tileX, tileY));
+                break;
+            default:
+                System.out.println("NO building for that YET");
+                return;
+        }
+
+        buildingManager.registerBuilding(selectedBuilding);
+
     }
 
 

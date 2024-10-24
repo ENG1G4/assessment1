@@ -6,17 +6,16 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.Color;
 
 import com.badlogic.gdx.graphics.glutils.FileTextureData;
+import com.badlogic.gdx.math.Rectangle;
 import java.util.HashMap;
 
-public class PlaceableObject {
+public class PlaceableObject extends Rectangle {
     private static final HashMap<String, Texture> textureCache = new HashMap<>();
     private final Texture texture;
-    private final int width; // in grid tiles
-    private final int height; // in grid tiles
-    private int tileX; // grid position
-    private int tileY;
 
     public PlaceableObject(String texturePath, int width, int height, int x, int y) {
+        super(x, y, width, height);
+
         // Use texture cache to avoid loading the same texture multiple times
         if (textureCache.containsKey(texturePath)) {
             this.texture = textureCache.get(texturePath);
@@ -24,43 +23,19 @@ public class PlaceableObject {
             this.texture = new Texture(Gdx.files.internal(texturePath));
             textureCache.put(texturePath, this.texture);
         }
-        this.width = width;
-        this.height = height;
-        this.tileX = x;
-        this.tileY = y;
-    }
-
-    protected int getTileX(){
-        return tileX;
-    }
-    protected int getTileY(){
-        return tileY;
-    }
-
-    protected int getWidth(){
-        return width;
-    }
-
-    protected int getHeight(){
-        return height;
-    }
-
-    public void setPosition(int tileX, int tileY) {
-        this.tileX = tileX;
-        this.tileY = tileY;
     }
 
     public void draw(SpriteBatch batch, float originX, float originY, float tileWidth, float tileHeight) {
         // Calculate the screen position based on the isometric projection
-        float screenX = originX + (tileX - tileY) * (tileWidth / 2f);
-        float screenY = originY + (tileX + tileY) * (tileHeight / 2f);
+        float screenX = originX + (this.x - this.y) * (tileWidth / 2f);
+        float screenY = originY + (this.x + this.y) * (tileHeight / 2f);
 
         // Adjust for the object's dimensions
-        screenX -= (width - 1) * (tileWidth / 2f);
-        screenY -= (height - 1) * (tileHeight / 2f);
+        screenX -= (this.width - 1) * (tileWidth / 2f);
+        screenY -= (this.height - 1) * (tileHeight / 2f);
 
         // Draw the texture
-        batch.draw(texture, screenX, screenY, width * tileWidth, height * tileHeight);
+        batch.draw(texture, screenX, screenY, this.width * tileWidth, this.height * tileHeight);
     }
 
     public void dispose() {
