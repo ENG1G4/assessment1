@@ -129,8 +129,7 @@ public class Main extends ApplicationAdapter {
     }
 
     private void drawTimeRemaining() {
-        int fps = Gdx.graphics.getFramesPerSecond();
-        String text = "FPS: " + fps + "\nTime Remaining: " + countdownTimer.getTimeRemaining();
+        String text = "\n\nTime Remaining: " + countdownTimer.getTimeRemaining();
 
         batch.begin();
         font.draw(batch, text, 10, viewport.getWorldHeight() - 10);
