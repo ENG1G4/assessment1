@@ -1,17 +1,17 @@
 package io.github.eng1g4;
 
-import com.badlogic.gdx.*;
+import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.BitmapFont.Glyph;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.graphics.Color;
-
-
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.eng1g4.building.BuildingManager;
@@ -21,13 +21,20 @@ public class Main extends ApplicationAdapter {
     private SpriteBatch batch;
     private ShapeRenderer shapeRenderer;
     private Texture image;
+    private boolean gameOver;
     private boolean isPaused;
+    private boolean showCredits;
     private Map map;
     private BitmapFont font;
-    private GlyphLayout glyphLayout;
     private OrthographicCamera camera;
     Viewport viewport;
     private UI ui;
+    private CountdownTimer countdownTimer;
+
+    // Calculated text layouts
+    private GlyphLayout pauseMenuTextLayout;
+    private GlyphLayout gameOverTextLayout;
+    private GlyphLayout creditsTextLayout;
 
     @Override
     public void create() {
@@ -35,11 +42,10 @@ public class Main extends ApplicationAdapter {
         shapeRenderer = new ShapeRenderer();
         image = new Texture("libgdx.png");
         isPaused = true;
+        countdownTimer = new CountdownTimer(this);
 
         font = new BitmapFont();
         font.setColor(Color.WHITE);
-
-        glyphLayout = new GlyphLayout();
 
         float virtualHeight = 720; // You can choose any value
         float aspectRatio = 16f / 9f;
@@ -54,32 +60,81 @@ public class Main extends ApplicationAdapter {
 
         BuildingManager buildingManager = new BuildingManager();
 
-        map = new Map("testgrid.jpg",75, 75,virtualWidth, virtualHeight, buildingManager);
+        map = new Map("testgrid.jpg",75, 75, virtualWidth, virtualHeight, buildingManager);
 
         // Create Ui instance
         ui = new UI(viewport, camera, this, buildingManager);
+
+        // Calculate pause menu text once, not every frame
+        this.pauseMenuTextLayout = getGlyphLayout("Paused");
+        this.gameOverTextLayout = getGlyphLayout("Game Over.");
+        this.creditsTextLayout = getGlyphLayout("\n\nAccommodation, Lecture theatre, Restaurant and Sports centre assets designed by Freepik.");
+
+    }
+
+    private GlyphLayout getGlyphLayout(String text) {
+        GlyphLayout glyphLayout = new GlyphLayout();
+        glyphLayout.setText(this.font, text);
+        return glyphLayout;
     }
 
     public void togglePause() {
         isPaused = !isPaused;
+
+        if (isPaused) {
+            countdownTimer.stop();
+        } else {
+            countdownTimer.start();
+        }
+
     }
 
     public boolean isPaused() {
         return this.isPaused;
     }
 
+    public void endGame() {
+        this.gameOver = true;
+    }
+
     public Map getMap() {
         return map;
     }
 
-    public void drawPauseText(SpriteBatch batch) {
-        String text = "Pause";
-        float width = text.length();
-        float height = font.getCapHeight();
-        float x = (viewport.getWorldWidth() - width) / 2;
-        float y = (viewport.getWorldHeight() + height) / 2;
+    private void drawCentredGlyphLayout(GlyphLayout glyphLayout) {
+        float x = (viewport.getWorldWidth() - glyphLayout.width) / 2;
+        float y = (viewport.getWorldHeight() + glyphLayout.height) / 2;
 
-        font.draw(batch, text, x, y);
+        this.batch.begin();
+        font.draw(batch, glyphLayout, x, y);
+        this.batch.end();
+    }
+
+    private void drawPauseMenu() {
+       drawCentredGlyphLayout(this.pauseMenuTextLayout);
+       drawTimeRemaining();
+
+       if (showCredits) {
+           drawCentredGlyphLayout(this.creditsTextLayout);
+       }
+
+    }
+
+    public void toggleCredits() {
+        this.showCredits = !this.showCredits;
+    }
+
+    private void drawGameOverScreen() {
+        drawCentredGlyphLayout(this.gameOverTextLayout);
+    }
+
+    private void drawTimeRemaining() {
+        int fps = Gdx.graphics.getFramesPerSecond();
+        String text = "FPS: " + fps + "\nTime Remaining: " + countdownTimer.getTimeRemaining();
+
+        batch.begin();
+        font.draw(batch, text, 10, viewport.getWorldHeight() - 10);
+        batch.end();
     }
 
     @Override
@@ -100,20 +155,22 @@ public class Main extends ApplicationAdapter {
         Vector3 mouseScreenCoords = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
         Vector3 mouseWorldCoords = camera.unproject(mouseScreenCoords);
 
-        if (!isPaused){
-            map.draw(batch, shapeRenderer, mouseWorldCoords.x, mouseWorldCoords.y);
-        } else {
-            batch.begin();
-            drawPauseText(batch);
-            batch.end();
+        // Draw game over screen
+        if (this.gameOver) {
+            drawGameOverScreen();
+            return;
         }
 
-        batch.begin();
-        int fps = Gdx.graphics.getFramesPerSecond();
-        String fpsText = "FPS: " + fps;
-        glyphLayout.setText(font, fpsText);
-        font.draw(batch, glyphLayout, 10, viewport.getWorldHeight() - 10);
-        batch.end();
+        // Draw pause menu
+        if (this.isPaused) {
+            drawPauseMenu();
+            return;
+        }
+
+        // Draw map
+        map.draw(batch, shapeRenderer, mouseWorldCoords.x, mouseWorldCoords.y);
+
+        drawTimeRemaining();
 
         // Draw the UI
         ui.draw();

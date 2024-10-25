@@ -8,8 +8,8 @@ public class BuildingManager {
         return this.buildingCount[buildingType.ordinal()];
     }
 
-    public void registerBuilding(int buildingTypeOrdinal) {
-        this.buildingCount[buildingTypeOrdinal] += 1;
+    public void registerBuilding(BuildingType buildingType) {
+        this.buildingCount[buildingType.ordinal()] += 1;
     }
 
 }
