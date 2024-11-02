@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Rectangle;
@@ -23,21 +22,23 @@ public class Map implements Disposable {
     private final int width;
     private final int height;
     private final Texture backgroundTexture;
-    private TextureRegion backgroundRegion;
     private float originX;
     private float originY;
     private float tileWidth;
     private float tileHeight;
 
-    private float virtualWidth;
-    private float virtualHeight;
-    private PlaceableObject objectToPlace;
+    private final float virtualWidth;
+    private final float virtualHeight;
     private final ArrayList<PlaceableObject> placeableObjects;
 
     private BuildingType selectedBuilding = BuildingType.ACCOMMODATION;
     private final BuildingManager buildingManager;
+    private ObstacleMap obstacleMap;
 
-    public Map(String backgroundTexturePath, int width, int height, float virtualWidth, float virtualHeight, BuildingManager buildingManager) {
+    public Map
+        (String backgroundTexturePath, int width, int height,
+        float virtualWidth, float virtualHeight, BuildingManager buildingManager)
+    {
         this.width = width;
         this.height = height;
         this.buildingManager = buildingManager;
@@ -49,17 +50,20 @@ public class Map implements Disposable {
         this.virtualWidth = virtualWidth;
         this.virtualHeight = virtualHeight;
         tileWidth = virtualWidth / width;
-        tileHeight = tileWidth / 2f;
+        tileHeight = tileWidth / 2;
 
         originX = 0;
         originY = 0;
 
         setTileSizeAndOrigin();
+
+        createObstacleMap();
     }
 
     private void drawOnGrid(Consumer<Diamond> consumer, int x, int y) {
-        float screenX = (x - y) * (this.tileWidth / 2f) + this.originX;
-        float screenY = (x + y) * (this.tileHeight / 2f) + this.originY;
+        float[] screenCoordinates = tileToScreen(x, y);
+        float screenX = screenCoordinates[0] - tileWidth / 2f;
+        float screenY = screenCoordinates[1];
 
         // Calculate the four corners of the diamond (tile)
         float x0 = screenX;
@@ -77,21 +81,96 @@ public class Map implements Disposable {
         consumer.accept(new Diamond(x0, y0, x1, y1, x2, y2, x3, y3));
     }
 
+    private void createObstacleMap(){
+        int width = 20;
+        int height = 20;
+        obstacleMap = new ObstacleMap(width, height);
+
+        // river
+        for (int x = 0; x < height; x++) {
+            int y = height / 2 + (int)(Math.sin(x * 0.5) * 2);
+            obstacleMap.add(x, y);
+            obstacleMap.add(x, y + 1);
+        }
+
+        // rocks
+        obstacleMap.add(3, 5);
+        obstacleMap.add(4, 5);
+        obstacleMap.add(5, 6);
+
+        obstacleMap.add(10, 4);
+        obstacleMap.add(10, 5);
+
+        obstacleMap.add(15, 13);
+        obstacleMap.add(16, 13);
+        obstacleMap.add(16, 12);
+
+        obstacleMap.add(18, 14);
+        obstacleMap.add(19, 14);
+
+        obstacleMap.add(2, 3);
+        obstacleMap.add(3, 3);
+        obstacleMap.add(4, 4);
+
+        obstacleMap.add(7, 7);
+        obstacleMap.add(8, 7);
+        obstacleMap.add(8, 8);
+
+        obstacleMap.add(12, 2);
+        obstacleMap.add(13, 2);
+        obstacleMap.add(14, 3);
+
+        obstacleMap.add(6, 15);
+        obstacleMap.add(7, 15);
+        obstacleMap.add(7, 16);
+
+        obstacleMap.add(11, 17);
+        obstacleMap.add(12, 17);
+
+        obstacleMap.add(15, 18);
+        obstacleMap.add(16, 18);
+        obstacleMap.add(16, 19);
+
+        obstacleMap.add(17, 6);
+        obstacleMap.add(18, 6);
+        obstacleMap.add(18, 7);
+
+        obstacleMap.resize(this.width, this.height);
+
+    }
     private void drawGrid(ShapeRenderer shapeRenderer) {
         shapeRenderer.begin(ShapeType.Line);
         shapeRenderer.setColor(1, 1, 1, 1); // White color for lines
 
-        for (int x = 0; x < this.width; x++) {
-            for (int y = 0; y < this.height; y++) {
-                drawOnGrid(diamond -> {
-                    //TODO too many lines are drawn if you think about it
+        // Precompute the center positions of all diamonds
+        float[][] centerX = new float[width + 1][height + 1];
+        float[][] centerY = new float[width + 1][height + 1];
+        for (int x = 0; x <= width; x++) {
+            for (int y = 0; y <= height; y++) {
+                centerX[x][y] = originX + (x - y) * (tileWidth / 2);
+                centerY[x][y] = originY + (x + y) * (tileHeight / 2);
+            }
+        }
 
-                    // Draw lines between the points
-                    shapeRenderer.line(diamond.x0(), diamond.y0(), diamond.x1(), diamond.y1());
-                    shapeRenderer.line(diamond.x1(), diamond.y1(), diamond.x2(), diamond.y2());
-                    shapeRenderer.line(diamond.x2(), diamond.y2(), diamond.x3(), diamond.y3());
-                    shapeRenderer.line(diamond.x3(), diamond.y3(), diamond.x0(), diamond.y0());
-                }, x, y);
+        // Draw the grid lines
+        for (int x = 0; x <= width; x++) {
+            for (int y = 0; y <= height; y++) {
+                float cx = centerX[x][y];
+                float cy = centerY[x][y];
+
+                // Draw line to the right neighbor
+                if (x < width) {
+                    float neighborX = centerX[x + 1][y];
+                    float neighborY = centerY[x + 1][y];
+                    shapeRenderer.line(cx, cy, neighborX, neighborY);
+                }
+
+                // Draw line to the bottom neighbor
+                if (y < height) {
+                    float neighborX = centerX[x][y + 1];
+                    float neighborY = centerY[x][y + 1];
+                    shapeRenderer.line(cx, cy, neighborX, neighborY);
+                }
             }
         }
 
@@ -114,12 +193,12 @@ public class Map implements Disposable {
     private void drawHoveredCell(ShapeRenderer shapeRenderer, float mouseWorldX, float mouseWorldY) {
         // Determine which tile the mouse is over
         int[] hoveredTile = screenToTile(mouseWorldX, mouseWorldY);
-        int hoverX = hoveredTile[0];
-        int hoverY = hoveredTile[1];
+        int tileX = hoveredTile[0];
+        int tileY = hoveredTile[1];
 
         // First, draw the highlighted tile if it is within the map bounds
-        if (hoverX >= 0 && hoverX < width && hoverY >= 0 && hoverY < height) {
-            colourCell(shapeRenderer, hoverX, hoverY, Color.BLUE);
+        if (tileX >= 0 && tileX < width && tileY >= 0 && tileY < height) {
+            colourCell(shapeRenderer, tileX, tileY, Color.BLUE);
         }
     }
 
@@ -134,8 +213,6 @@ public class Map implements Disposable {
             return;
         }
 
-        // Create a new PlacableObject at this tile
-
         // Check if buildings are not present when making a new one
         Rectangle newBuildingRectangle = new Rectangle(tileX, tileY, 4, 4);
         for (PlaceableObject placeableObject : this.placeableObjects) {
@@ -144,9 +221,31 @@ public class Map implements Disposable {
             }
         }
 
+        // Check out-of-bounds placement
+
+        int buildingWidth = selectedBuilding.getWidth();
+        int buildingHeight = selectedBuilding.getHeight();
+
+        if ((tileX - buildingWidth + 1) < 0 || (tileY - buildingHeight + 1) < 0 ) {
+            return;
+        }
+
+        // Check obstacle collision
+
+        for (int x = tileX; x > tileX - buildingWidth; x--) {
+            for (int y = tileY; y > tileY - buildingHeight; y--) {
+                if (obstacleMap.contains(x, y)){
+                    return;
+
+                }
+            }
+        }
+
+
         // Create new building
         switch (selectedBuilding) {
             case ACCOMMODATION:
+
                 placeableObjects.add(new Accommodation(tileX, tileY));
                 break;
             case SPORTS_CENTRE:
@@ -168,11 +267,27 @@ public class Map implements Disposable {
     }
 
 
+    private void drawObstacles(ShapeRenderer shapeRenderer){
+        for (int x = 0; x <= width; x++) {
+            for (int y = 0; y <= height; y++) {
+                if (obstacleMap.contains(x, y)){
+                    colourCell(shapeRenderer, x, y, Color.RED);
+                }
+            }
+        }
+
+
+    }
+
     private void drawBuildings(SpriteBatch batch) {
         batch.begin();
 
         for (PlaceableObject building: placeableObjects){
-            building.draw(batch, this.originX, this.originY, this.tileWidth, this.tileHeight);
+            float [] buildingCoordinates = tileToScreen((int)building.getX(), (int)building.getY());
+
+            building.draw(
+                batch, buildingCoordinates[0], buildingCoordinates[1],
+                this.tileWidth, this.tileHeight);
         }
 
         batch.end();
@@ -181,17 +296,12 @@ public class Map implements Disposable {
     public void draw(SpriteBatch batch, ShapeRenderer shapeRenderer, float mouseWorldX, float mouseWorldY) {
         drawGrid(shapeRenderer);
         drawHoveredCell(shapeRenderer, mouseWorldX, mouseWorldY);
-
+        drawObstacles(shapeRenderer);
         drawBuildings(batch);
     }
 
 
     private int[] screenToTile(float worldX, float worldY) {
-        // This is flawed and does not work after resizing for some reason
-        // Presumably since the map's origin should be recalculated after resizing
-        // But then something else breaks...
-
-        //TODO fix cursor offset near screen edges
 
         // Adjust coordinates relative to origin
         float sX = worldX - originX;
@@ -214,6 +324,22 @@ public class Map implements Disposable {
             return new int[] { tileX, tileY };
         }
     }
+
+    private float[] tileToScreen(int tileX, int tileY) {
+        float halfTileWidth = tileWidth / 2f;
+        float halfTileHeight = tileHeight / 2f;
+
+        // Calculate transformed coordinates
+        float sX = halfTileWidth * (tileX - tileY);
+        float sY = halfTileHeight * (tileX + tileY);
+
+        // Adjust coordinates relative to origin
+        float worldX = sX + originX;
+        float worldY = sY + originY;
+
+        return new float[] { worldX, worldY };
+    }
+
     public void setTileSizeAndOrigin() {
 
         tileWidth = 2f * virtualWidth / (width + height);

@@ -80,8 +80,7 @@ public class UI {
         float buttonWidth = 100;
         float buttonHeight = 50;
         float spacing = 10;
-        float totalWidth = 5 * buttonWidth + 4 * spacing;
-        float startX = (viewport.getWorldWidth() - totalWidth) / 2f;
+        float startX = 10;
         float y = 10;
 
         for (BuildingType buildingType: BuildingType.cachedValues) {
@@ -212,7 +211,10 @@ public class UI {
 
         @Override
         public boolean mouseMoved(int screenX, int screenY) {
-            return false;
+
+            main.setMouseX(screenX);
+            main.setMouseY(screenY);
+            return true;
         }
 
         @Override

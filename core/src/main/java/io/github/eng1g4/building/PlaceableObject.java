@@ -15,7 +15,6 @@ public class PlaceableObject extends Rectangle {
 
     public PlaceableObject(String texturePath, int width, int height, int x, int y) {
         super(x, y, width, height);
-
         // Use texture cache to avoid loading the same texture multiple times
         if (textureCache.containsKey(texturePath)) {
             this.texture = textureCache.get(texturePath);
@@ -25,17 +24,26 @@ public class PlaceableObject extends Rectangle {
         }
     }
 
-    public void draw(SpriteBatch batch, float originX, float originY, float tileWidth, float tileHeight) {
-        // Calculate the screen position based on the isometric projection
-        float screenX = originX + (this.x - this.y) * (tileWidth / 2f);
-        float screenY = originY + (this.x + this.y) * (tileHeight / 2f);
+    public float getTextureHeight(){
+        return 1.0f;
+    }
 
-        // Adjust for the object's dimensions
-        screenX -= (this.width - 1) * (tileWidth / 2f);
-        screenY -= (this.height - 1) * (tileHeight / 2f);
+    public float getXOffset(){
+        return 0.0f;
+    }
+
+    public float getYOffset(){
+        return 0.0f;
+    }
+
+
+    public void draw(SpriteBatch batch, float worldX, float worldY, float tileWidth, float tileHeight) {
+
 
         // Draw the texture
-        batch.draw(texture, screenX, screenY, this.width * tileWidth, this.height * tileHeight);
+        batch.draw(texture, worldX - this.width * tileWidth / 2 + tileWidth * getXOffset()
+            , worldY - this.height * tileHeight + tileHeight * getYOffset(),
+            this.width * tileWidth, this.height * tileHeight * getTextureHeight());
     }
 
     public void dispose() {

@@ -15,6 +15,21 @@ public abstract class Building extends PlaceableObject implements IBuilding {
     }
 
     @Override
+    public float getTextureHeight(){
+        return buildingType.getTextureHeight();
+    }
+
+    @Override
+    public float getXOffset(){
+        return buildingType.getXOffset();
+    }
+
+    @Override
+    public float getYOffset(){
+        return buildingType.getYOffset();
+    }
+
+    @Override
     public String getName() {
         return this.buildingType.getName();
     }
