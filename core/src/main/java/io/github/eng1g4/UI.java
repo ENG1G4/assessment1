@@ -20,7 +20,7 @@ public class UI {
     private final Stage stage;
     private final Label[] buildingCountText;
     private Label buildingSelectionIndexLabel;
-    private final Main main; // This could be bad practice
+    private final Main main;
     private final Viewport viewport;
     private final Camera camera;
     private final BuildingManager buildingManager;

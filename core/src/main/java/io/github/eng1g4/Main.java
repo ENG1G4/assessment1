@@ -1,5 +1,7 @@
 package io.github.eng1g4;
 
+import static com.badlogic.gdx.Gdx.graphics;
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -13,8 +15,6 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.eng1g4.building.BuildingManager;
-
-import static com.badlogic.gdx.Gdx.graphics;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends ApplicationAdapter {
@@ -189,6 +189,7 @@ public class Main extends ApplicationAdapter {
         batch.dispose();
         image.dispose();
         ui.getStage().dispose();
+        this.map.dispose();
         // Dispose other resources as necessary
     }
 }

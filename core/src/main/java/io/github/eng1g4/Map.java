@@ -8,15 +8,14 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Disposable;
-import io.github.eng1g4.building.BuildingType;
-import io.github.eng1g4.building.impl.Accommodation;
 import io.github.eng1g4.building.BuildingManager;
+import io.github.eng1g4.building.BuildingType;
 import io.github.eng1g4.building.PlaceableObject;
+import io.github.eng1g4.building.impl.Accommodation;
 import io.github.eng1g4.building.impl.LectureTheatre;
 import io.github.eng1g4.building.impl.Restaurant;
 import io.github.eng1g4.building.impl.SportsCentre;
 import java.util.ArrayList;
-import java.util.function.Consumer;
 
 public class Map implements Disposable {
     private final int width;
@@ -58,27 +57,6 @@ public class Map implements Disposable {
         setTileSizeAndOrigin();
 
         createObstacleMap();
-    }
-
-    private void drawOnGrid(Consumer<Diamond> consumer, int x, int y) {
-        float[] screenCoordinates = tileToScreen(x, y);
-        float screenX = screenCoordinates[0] - tileWidth / 2f;
-        float screenY = screenCoordinates[1];
-
-        // Calculate the four corners of the diamond (tile)
-        float x0 = screenX;
-        float y0 = screenY + (tileHeight / 2f);
-
-        float x1 = screenX + (tileWidth / 2f);
-        float y1 = screenY + tileHeight;
-
-        float x2 = screenX + tileWidth;
-        float y2 = screenY + (tileHeight / 2f);
-
-        float x3 = screenX + (tileWidth / 2f);
-        float y3 = screenY;
-
-        consumer.accept(new Diamond(x0, y0, x1, y1, x2, y2, x3, y3));
     }
 
     private void createObstacleMap(){
@@ -181,11 +159,23 @@ public class Map implements Disposable {
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(color);
 
-        drawOnGrid(diamond -> {
-            // Draw two triangles to fill the diamond
-            shapeRenderer.triangle(diamond.x0(), diamond.y0(), diamond.x1(), diamond.y1(), diamond.x2(), diamond.y2());
-            shapeRenderer.triangle(diamond.x2(), diamond.y2(), diamond.x3(), diamond.y3(), diamond.x0(), diamond.y0());
-        }, tileX, tileY);
+        float[] screenCoordinates = tileToScreen(tileX, tileY);
+        float screenX = screenCoordinates[0] - tileWidth / 2f;
+        float screenY = screenCoordinates[1];
+
+        // Calculate the four corners of the diamond (tile)
+        float y0 = screenY + (tileHeight / 2f);
+
+        float x1 = screenX + (tileWidth / 2f);
+        float y1 = screenY + tileHeight;
+
+        float x2 = screenX + tileWidth;
+        float y2 = screenY + (tileHeight / 2f);
+
+        float x3 = screenX + (tileWidth / 2f);
+
+        shapeRenderer.triangle(screenX, y0, x1, y1, x2, y2);
+        shapeRenderer.triangle(x2, y2, x3, screenY, screenX, y0);
 
         shapeRenderer.end();
     }
@@ -213,8 +203,11 @@ public class Map implements Disposable {
             return;
         }
 
+        int buildingWidth = selectedBuilding.getWidth();
+        int buildingHeight = selectedBuilding.getHeight();
+
         // Check if buildings are not present when making a new one
-        Rectangle newBuildingRectangle = new Rectangle(tileX, tileY, 4, 4);
+        Rectangle newBuildingRectangle = new Rectangle(tileX, tileY, buildingWidth, buildingHeight);
         for (PlaceableObject placeableObject : this.placeableObjects) {
             if (placeableObject.overlaps(newBuildingRectangle)) {
                 return;
@@ -222,16 +215,11 @@ public class Map implements Disposable {
         }
 
         // Check out-of-bounds placement
-
-        int buildingWidth = selectedBuilding.getWidth();
-        int buildingHeight = selectedBuilding.getHeight();
-
         if ((tileX - buildingWidth + 1) < 0 || (tileY - buildingHeight + 1) < 0 ) {
             return;
         }
 
         // Check obstacle collision
-
         for (int x = tileX; x > tileX - buildingWidth; x--) {
             for (int y = tileY; y > tileY - buildingHeight; y--) {
                 if (obstacleMap.contains(x, y)){
@@ -245,7 +233,6 @@ public class Map implements Disposable {
         // Create new building
         switch (selectedBuilding) {
             case ACCOMMODATION:
-
                 placeableObjects.add(new Accommodation(tileX, tileY));
                 break;
             case SPORTS_CENTRE:
@@ -363,6 +350,7 @@ public class Map implements Disposable {
     }
 
     public void dispose() {
-        backgroundTexture.dispose();
+        this.backgroundTexture.dispose();
+        this.placeableObjects.forEach(PlaceableObject::dispose);
     }
 }

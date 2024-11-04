@@ -1,9 +1,10 @@
 package io.github.eng1g4;
 
-import java.util.HashSet;
-import static java.lang.Math.*;
+import static java.lang.Math.floor;
 
-public class ObstacleMap{
+import java.util.HashSet;
+
+public class ObstacleMap {
 
     private float height;
     private float width;

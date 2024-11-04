@@ -21,16 +21,16 @@ public enum BuildingType {
     private final int width;
     private final int height;
     private final float textureHeight;
-    private final float textureXoffset;
-    private final float textureYoffset;
+    private final float textureXOffset;
+    private final float textureYOffset;
 
     BuildingType(String name, int width, int height, float textureHeight, float textureXOffset, float textureYOffset) {
         this.name = name;
         this.width = width;
         this.height = height;
         this.textureHeight = textureHeight;
-        this.textureXoffset = textureXOffset;
-        this.textureYoffset = textureYOffset;
+        this.textureXOffset = textureXOffset;
+        this.textureYOffset = textureYOffset;
 
     }
 
@@ -47,11 +47,11 @@ public enum BuildingType {
     }
 
     public float getXOffset(){
-        return textureXoffset;
+        return textureXOffset;
     }
 
     public float getYOffset(){
-        return textureYoffset;
+        return textureYOffset;
     }
 
     public String getName() {

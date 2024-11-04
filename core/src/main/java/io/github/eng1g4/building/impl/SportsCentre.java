@@ -8,7 +8,6 @@ public class SportsCentre extends Building {
     private static final String TEXTURE_PATH = "sports_centre_cropped.png";
 
 	public SportsCentre(int x, int y) {
-		super(TEXTURE_PATH, BuildingType.SPORTS_CENTRE.getWidth(), BuildingType.SPORTS_CENTRE.getHeight(),
-            x, y, BuildingType.SPORTS_CENTRE);
+		super(TEXTURE_PATH, x, y, BuildingType.SPORTS_CENTRE);
 	}
 }

@@ -4,8 +4,8 @@ public abstract class Building extends PlaceableObject implements IBuilding {
 
     private final BuildingType buildingType;
 
-    public Building(String texturePath, int width, int height, int x, int y, BuildingType buildingType) {
-        super(texturePath, width, height, x, y);
+    public Building(String texturePath, int x, int y, BuildingType buildingType) {
+        super(texturePath, buildingType.getWidth(), buildingType.getHeight(), x, y);
 
         this.buildingType = buildingType;
     }
