@@ -35,7 +35,7 @@ public class PlaceableObject extends Rectangle {
     }
 
     public void draw(SpriteBatch batch, float worldX, float worldY, float tileWidth, float tileHeight) {
-        // Draw the texture
+        // Draw the centered and adjusted by offsets texture
         batch.draw(texture, worldX - this.width * tileWidth / 2 + tileWidth * getXOffset(),
             worldY - this.height * tileHeight + tileHeight * getYOffset(),
             this.width * tileWidth, this.height * tileHeight * getTextureHeight());

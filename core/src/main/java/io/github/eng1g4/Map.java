@@ -48,8 +48,6 @@ public class Map implements Disposable {
 
         this.virtualWidth = virtualWidth;
         this.virtualHeight = virtualHeight;
-        tileWidth = virtualWidth / width;
-        tileHeight = tileWidth / 2;
 
         originX = 0;
         originY = 0;
@@ -289,6 +287,9 @@ public class Map implements Disposable {
 
 
     private int[] screenToTile(float worldX, float worldY) {
+        // https://clintbellanger.net/articles/isometric_math/
+        // the link above justifies all the formulas used
+
 
         // Adjust coordinates relative to origin
         float sX = worldX - originX;
@@ -313,6 +314,9 @@ public class Map implements Disposable {
     }
 
     private float[] tileToScreen(int tileX, int tileY) {
+        // https://clintbellanger.net/articles/isometric_math/
+        // the link above justifies all the formulas used
+
         float halfTileWidth = tileWidth / 2f;
         float halfTileHeight = tileHeight / 2f;
 

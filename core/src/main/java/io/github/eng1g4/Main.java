@@ -61,7 +61,7 @@ public class Main extends ApplicationAdapter {
 
         BuildingManager buildingManager = new BuildingManager();
 
-        map = new Map("testgrid.jpg",100, 100, virtualWidth, virtualHeight, buildingManager);
+        map = new Map("testgrid.jpg",10, 10, virtualWidth, virtualHeight, buildingManager);
 
         // Create Ui instance
         ui = new UI(viewport, camera, this, buildingManager);

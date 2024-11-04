@@ -35,10 +35,8 @@ public class UI {
 
         Skin skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
-        // Create pause button
         createPauseButton(skin);
 
-        // Create building selection buttons
         buildingCountText = new Label[5];
         createBuildingButtons(skin);
 
