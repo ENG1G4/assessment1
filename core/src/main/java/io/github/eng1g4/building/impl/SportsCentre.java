@@ -5,9 +5,9 @@ import io.github.eng1g4.building.BuildingType;
 
 public class SportsCentre extends Building {
 
-    private static final String TEXTURE_PATH = "sports_centre.png";
+    private static final String TEXTURE_PATH = "sports_centre_cropped.png";
 
 	public SportsCentre(int x, int y) {
-		super(TEXTURE_PATH, 4, 4, x, y, BuildingType.SPORTS_CENTRE);
+		super(TEXTURE_PATH, x, y, BuildingType.SPORTS_CENTRE);
 	}
 }

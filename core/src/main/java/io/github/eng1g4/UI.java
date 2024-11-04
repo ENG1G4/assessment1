@@ -20,7 +20,7 @@ public class UI {
     private final Stage stage;
     private final Label[] buildingCountText;
     private Label buildingSelectionIndexLabel;
-    private final Main main; // This could be bad practice
+    private final Main main;
     private final Viewport viewport;
     private final Camera camera;
     private final BuildingManager buildingManager;
@@ -35,10 +35,8 @@ public class UI {
 
         Skin skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
-        // Create pause button
         createPauseButton(skin);
 
-        // Create building selection buttons
         buildingCountText = new Label[5];
         createBuildingButtons(skin);
 
@@ -80,8 +78,7 @@ public class UI {
         float buttonWidth = 100;
         float buttonHeight = 50;
         float spacing = 10;
-        float totalWidth = 5 * buttonWidth + 4 * spacing;
-        float startX = (viewport.getWorldWidth() - totalWidth) / 2f;
+        float startX = 10;
         float y = 10;
 
         for (BuildingType buildingType: BuildingType.cachedValues) {
@@ -212,7 +209,10 @@ public class UI {
 
         @Override
         public boolean mouseMoved(int screenX, int screenY) {
-            return false;
+
+            main.setMouseX(screenX);
+            main.setMouseY(screenY);
+            return true;
         }
 
         @Override
