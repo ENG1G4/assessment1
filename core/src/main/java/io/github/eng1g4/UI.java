@@ -18,6 +18,7 @@ import io.github.eng1g4.building.BuildingType;
 
 public class UI {
     private final Stage stage;
+    private final Stage pauseStage;
     private final Label[] buildingCountText;
     private Label buildingSelectionIndexLabel;
     private final Main main;
@@ -32,6 +33,7 @@ public class UI {
         this.buildingManager = buildingManager;
 
         stage = new Stage(viewport);
+        pauseStage = new Stage(viewport);
 
         Skin skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
@@ -53,6 +55,7 @@ public class UI {
 
         // Add the Stage's input processor first, so it has priority
         inputMultiplexer.addProcessor(stage);
+        inputMultiplexer.addProcessor(pauseStage);
 
         inputMultiplexer.addProcessor(new GameInputProcessor());
 
@@ -71,7 +74,7 @@ public class UI {
             }
         });
 
-        stage.addActor(pauseButton);
+        pauseStage.addActor(pauseButton);
     }
 
     private void createBuildingButtons(Skin skin) {
@@ -140,6 +143,10 @@ public class UI {
         stage.act();
         drawBuildingLabels();
         stage.draw();
+    }
+    public void drawPause() {
+        pauseStage.act();
+        pauseStage.draw();
     }
 
     public void resize(int width, int height) {

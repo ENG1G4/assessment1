@@ -169,6 +169,8 @@ public class Main extends ApplicationAdapter {
             return;
         }
 
+        ui.drawPause();
+
         // Draw pause menu
         if (this.isPaused) {
             drawPauseMenu();
