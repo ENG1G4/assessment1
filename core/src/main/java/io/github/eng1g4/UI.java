@@ -6,6 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -21,11 +22,16 @@ public class UI {
     private final Map map;
     private final Viewport viewport;
     private final BuildingManager buildingManager;
+    private final SoundManager soundManager;
+    private Slider soundEffectSlider;
+    private Slider musicVolumeSlider;
 
-    public UI(Viewport viewport, Map map, BuildingManager buildingManager, GameInputProcessor gameInputProcessor, GameStateManager gameStateManager) {
+    public UI(Viewport viewport, Map map, BuildingManager buildingManager,
+              GameInputProcessor gameInputProcessor, GameStateManager gameStateManager, SoundManager soundManager) {
         this.viewport = viewport;
         this.map = map;
         this.buildingManager = buildingManager;
+        this.soundManager = soundManager;
 
         stage = new Stage(viewport);
         pauseStage = new Stage(viewport);
@@ -43,6 +49,9 @@ public class UI {
         // Create the "Selected building: " label
         createSelectedBuildingLabel(skin);
 
+        // Create volume control sliders
+        createVolumeSliders(skin);
+
 
         // Handle game inputs. Ui stage is required to be inputprocessor, so multiplexer
         // is needed if other inputs are added.
@@ -59,17 +68,27 @@ public class UI {
     }
 
     private void createPauseButton(Skin skin, GameStateManager gameStateManager) {
-        TextButton pauseButton = new TextButton("Pause", skin);
-        pauseButton.setPosition(10, viewport.getWorldHeight() - pauseButton.getHeight() - 10);
-
-        pauseButton.addListener(new ChangeListener() {
+        // Create the pause button for the gameplay stage
+        TextButton gameplayPauseButton = new TextButton("Pause", skin);
+        gameplayPauseButton.setPosition(10, viewport.getWorldHeight() - gameplayPauseButton.getHeight() - 10);
+        gameplayPauseButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 gameStateManager.togglePaused();
             }
         });
+        stage.addActor(gameplayPauseButton);
 
-        pauseStage.addActor(pauseButton);
+        // Create a separate instance of the pause button for the pause stage
+        TextButton pauseStagePauseButton = new TextButton("Pause", skin);
+        pauseStagePauseButton.setPosition(10, viewport.getWorldHeight() - pauseStagePauseButton.getHeight() - 10);
+        pauseStagePauseButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                gameStateManager.togglePaused();
+            }
+        });
+        pauseStage.addActor(pauseStagePauseButton);
     }
 
     private void createBuildingButtons(Skin skin) {
@@ -134,12 +153,48 @@ public class UI {
         buildingSelectionIndexLabel.setText("Selected building: " + this.map.getSelectedBuilding().getName());
     }
 
-    public void draw() {
+
+
+    private void createVolumeSliders(Skin skin) {
+
+
+        Label soundEffectLabel = new Label("Sound Effect Volume", skin);
+        soundEffectLabel.setPosition(10, viewport.getWorldHeight() - 150);
+        pauseStage.addActor(soundEffectLabel);
+
+        soundEffectSlider = new Slider(0, 1.0f, 0.01f, false, skin);
+        soundEffectSlider.setValue(soundManager.getSoundEffectVolume());
+        soundEffectSlider.setPosition(200, viewport.getWorldHeight() - 150);
+        soundEffectSlider.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                soundManager.setSoundEffectVolume(soundEffectSlider.getValue());
+            }
+        });
+        pauseStage.addActor(soundEffectSlider);
+
+        Label musicVolumeLabel = new Label("Music Volume", skin);
+        musicVolumeLabel.setPosition(10, viewport.getWorldHeight() - 200);
+        pauseStage.addActor(musicVolumeLabel);
+
+        musicVolumeSlider = new Slider(0, 1.0f, 0.01f, false, skin);
+        musicVolumeSlider.setValue(soundManager.getMusicVolume());
+        musicVolumeSlider.setPosition(200, viewport.getWorldHeight() - 200);
+        musicVolumeSlider.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                soundManager.setMusicVolume(musicVolumeSlider.getValue());
+            }
+        });
+        pauseStage.addActor(musicVolumeSlider);
+    }
+
+    public void drawGameplayStage() {
         stage.act();
         drawBuildingLabels();
         stage.draw();
     }
-    public void drawPauseButton() {
+    public void drawPauseStage() {
         pauseStage.act();
         pauseStage.draw();
     }

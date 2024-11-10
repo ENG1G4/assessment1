@@ -34,13 +34,16 @@ public class Main extends ApplicationAdapter {
     private GameOverMenu gameOverMenu;
     private PauseMenu pauseMenu;
     private GameStateManager gameStateManager;
+    private SoundManager soundManager;
 
     @Override
     public void create() {
         batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
         image = new Texture("libgdx.png");
-        gameStateManager = new GameStateManager();
+
+        soundManager = new SoundManager();
+        gameStateManager = new GameStateManager(soundManager);
 
         font = new BitmapFont();
         font.setColor(Color.WHITE);
@@ -60,7 +63,8 @@ public class Main extends ApplicationAdapter {
         BuildingManager buildingManager = new BuildingManager();
 
         // Create map, sets grid size
-        map = new Map("testgrid.jpg",100, 100, virtualWidth, virtualHeight, buildingManager);
+        map = new Map("testgrid.jpg",100, 100, virtualWidth,
+            virtualHeight, buildingManager, soundManager);
 
         // Instantiate menus
         TextHelper textHelper = new TextHelper(viewport, batch, font);
@@ -68,8 +72,9 @@ public class Main extends ApplicationAdapter {
         this.gameOverMenu = new GameOverMenu(textHelper);
 
         // Create Ui instance
-        GameInputProcessor gameInputProcessor = new GameInputProcessor(gameStateManager, pauseMenu, camera, map, this);
-        ui = new UI(viewport, map, buildingManager, gameInputProcessor, gameStateManager);
+        GameInputProcessor gameInputProcessor = new GameInputProcessor(gameStateManager,
+            pauseMenu, camera, map, this);
+        ui = new UI(viewport, map, buildingManager, gameInputProcessor, gameStateManager, soundManager);
 
     }
 
@@ -115,11 +120,11 @@ public class Main extends ApplicationAdapter {
         }
 
         // Include pause button and time remaining in pause menu and game screen.
-        ui.drawPauseButton();
         drawTimeRemaining();
 
         // Draw pause menu
         if (this.gameStateManager.isGamePaused()) {
+            ui.drawPauseStage();
             this.pauseMenu.draw();
             return;
         }
@@ -128,7 +133,7 @@ public class Main extends ApplicationAdapter {
         map.draw(batch, shapeRenderer, mouseWorldCoords.x, mouseWorldCoords.y);
 
         // Draw the UI
-        ui.draw();
+        ui.drawGameplayStage();
     }
 
     @Override
