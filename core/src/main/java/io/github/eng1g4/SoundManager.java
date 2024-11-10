@@ -23,10 +23,6 @@ public class SoundManager implements Disposable {
         musicVolume = 0.5f;
 
         setMusicVolume(musicVolume);
-
-
-
-
     }
 
     public void playBuildingPlacementSound(){
