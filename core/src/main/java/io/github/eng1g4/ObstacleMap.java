@@ -2,6 +2,7 @@ package io.github.eng1g4;
 
 import static java.lang.Math.floor;
 
+import io.github.eng1g4.util.IntPacker;
 import java.util.HashSet;
 
 public class ObstacleMap {
@@ -16,24 +17,22 @@ public class ObstacleMap {
         obstacles = new HashSet<>();
     }
 
-    public void add(int x, int y){
-        obstacles.add(new IntTuple(x, y).pack());
+    public void add(int x, int y) {
+        obstacles.add(IntPacker.pack(x, y));
     }
 
     // scales placed obstacles to new dimensions
-    public void resize(float newWidth, float newHeight){
+    public void resize(float newWidth, float newHeight) {
         HashSet<Double> newObstacles = new HashSet<>();
         float widthRatio = width /newWidth;
         float heightRatio = height /newHeight;
-        for (int x = 0; x < newWidth; x++){
-            for (int y = 0; y < newHeight; y++){
+        for (int x = 0; x < newWidth; x++) {
+            for (int y = 0; y < newHeight; y++) {
                 int scaledX = (int) floor((float)x * widthRatio);
                 int scaledY = (int) floor((float)y * heightRatio);
-                IntTuple scaledCords = new IntTuple(scaledX, scaledY);
-                double packedScaledCords = scaledCords.pack();
-                if (obstacles.contains(packedScaledCords)){
-                    IntTuple newObstacle = new IntTuple(x, y);
-                    double packedObstacle = newObstacle.pack();
+                double packedScaledCords = IntPacker.pack(scaledX, scaledY);
+                if (obstacles.contains(packedScaledCords)) {
+                    double packedObstacle = IntPacker.pack(x, y);
                     newObstacles.add(packedObstacle);
                 }
             }
@@ -45,7 +44,7 @@ public class ObstacleMap {
 
 
     public boolean contains(int x, int y){
-        return obstacles.contains(new IntTuple(x, y).pack());
+        return obstacles.contains(IntPacker.pack(x, y));
     }
 }
 

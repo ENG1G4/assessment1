@@ -57,7 +57,7 @@ public class Map implements Disposable {
         createObstacleMap();
     }
 
-    private void createObstacleMap(){
+    private void createObstacleMap() {
         int width = 20;
         int height = 20;
         obstacleMap = new ObstacleMap(width, height);
@@ -252,7 +252,7 @@ public class Map implements Disposable {
     }
 
 
-    private void drawObstacles(ShapeRenderer shapeRenderer){
+    private void drawObstacles(ShapeRenderer shapeRenderer) {
         for (int x = 0; x <= width; x++) {
             for (int y = 0; y <= height; y++) {
                 if (obstacleMap.contains(x, y)){

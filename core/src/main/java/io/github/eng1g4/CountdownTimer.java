@@ -2,6 +2,7 @@ package io.github.eng1g4;
 
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.Timer.Task;
+import io.github.eng1g4.state.GameStateManager;
 
 public class CountdownTimer {
 
@@ -9,14 +10,14 @@ public class CountdownTimer {
     private int timeRemaining = 300;
     private final Timer.Task countdownTimer;
 
-    public CountdownTimer(Main main) {
+    public CountdownTimer(GameStateManager gameStateManager) {
         this.countdownTimer = new Task() {
             @Override
             public void run() {
                 timeRemaining -= 1;
 
                 if (timeRemaining == 0) {
-                    main.endGame();
+                    gameStateManager.setGameOver();
                 }
             }
         };
