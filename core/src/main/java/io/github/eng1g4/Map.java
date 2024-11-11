@@ -33,14 +33,17 @@ public class Map implements Disposable {
     private BuildingType selectedBuilding = BuildingType.ACCOMMODATION;
     private final BuildingManager buildingManager;
     private ObstacleMap obstacleMap;
+    private SoundManager soundManager;
 
     public Map
         (String backgroundTexturePath, int width, int height,
-        float virtualWidth, float virtualHeight, BuildingManager buildingManager)
+        float virtualWidth, float virtualHeight, BuildingManager buildingManager,
+         SoundManager soundManager)
     {
         this.width = width;
         this.height = height;
         this.buildingManager = buildingManager;
+        this.soundManager = soundManager;
 
         backgroundTexture = new Texture(Gdx.files.internal(backgroundTexturePath));
 
@@ -247,6 +250,7 @@ public class Map implements Disposable {
                 return;
         }
 
+        soundManager.playBuildingPlacementSound();
         buildingManager.registerBuilding(selectedBuilding);
 
     }

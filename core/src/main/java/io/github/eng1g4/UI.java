@@ -1,7 +1,5 @@
 package io.github.eng1g4;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -15,22 +13,19 @@ import io.github.eng1g4.state.GameStateManager;
 
 public class UI {
     private final Stage stage;
-    private final Stage pauseStage;
     private final Label[] buildingCountText;
     private Label buildingSelectionIndexLabel;
     private final Map map;
     private final Viewport viewport;
     private final BuildingManager buildingManager;
 
-    public UI(Viewport viewport, Map map, BuildingManager buildingManager, GameInputProcessor gameInputProcessor, GameStateManager gameStateManager) {
+    public UI(Viewport viewport, Map map, BuildingManager buildingManager,
+        GameStateManager gameStateManager, Skin skin) {
         this.viewport = viewport;
         this.map = map;
         this.buildingManager = buildingManager;
 
         stage = new Stage(viewport);
-        pauseStage = new Stage(viewport);
-
-        Skin skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
         createPauseButton(skin, gameStateManager);
 
@@ -42,34 +37,19 @@ public class UI {
 
         // Create the "Selected building: " label
         createSelectedBuildingLabel(skin);
-
-
-        // Handle game inputs. Ui stage is required to be inputprocessor, so multiplexer
-        // is needed if other inputs are added.
-         InputMultiplexer inputMultiplexer = new InputMultiplexer();
-
-        // Add the Stage's input processor first, so it has priority
-        inputMultiplexer.addProcessor(stage);
-        inputMultiplexer.addProcessor(pauseStage);
-
-        inputMultiplexer.addProcessor(gameInputProcessor);
-
-        // Set the InputMultiplexer as the input processor
-        Gdx.input.setInputProcessor(inputMultiplexer);
     }
 
     private void createPauseButton(Skin skin, GameStateManager gameStateManager) {
-        TextButton pauseButton = new TextButton("Pause", skin);
-        pauseButton.setPosition(10, viewport.getWorldHeight() - pauseButton.getHeight() - 10);
-
-        pauseButton.addListener(new ChangeListener() {
+        // Create the pause button for the gameplay stage
+        TextButton gameplayPauseButton = new TextButton("Pause", skin);
+        gameplayPauseButton.setPosition(10, viewport.getWorldHeight() - gameplayPauseButton.getHeight() - 10);
+        gameplayPauseButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 gameStateManager.togglePaused();
             }
         });
-
-        pauseStage.addActor(pauseButton);
+        stage.addActor(gameplayPauseButton);
     }
 
     private void createBuildingButtons(Skin skin) {
@@ -79,7 +59,7 @@ public class UI {
         float startX = 10;
         float y = 10;
 
-        for (BuildingType buildingType: BuildingType.cachedValues) {
+        for (BuildingType buildingType: BuildingType.CACHED_VALUES) {
             TextButton buildingButton = new TextButton(buildingType.getName(), skin);
             buildingButton.setSize(buttonWidth, buttonHeight);
 
@@ -105,7 +85,7 @@ public class UI {
         float startY = viewport.getWorldHeight() - 100;
         float x = 10;
 
-        for (BuildingType buildingType: BuildingType.cachedValues) {
+        for (BuildingType buildingType: BuildingType.CACHED_VALUES) {
             Label buildingLabel = new Label(buildingType.getName() + " count: " + buildingManager.getBuildingCount(buildingType),
                 skin);
             buildingLabel.setSize(labelWidth, labelHeight);
@@ -127,21 +107,17 @@ public class UI {
     }
 
     public void drawBuildingLabels() {
-        for (BuildingType buildingType: BuildingType.cachedValues) {
+        for (BuildingType buildingType: BuildingType.CACHED_VALUES) {
             buildingCountText[buildingType.ordinal()]
                 .setText(buildingType.getName() + " count: " + buildingManager.getBuildingCount(buildingType));
         }
         buildingSelectionIndexLabel.setText("Selected building: " + this.map.getSelectedBuilding().getName());
     }
 
-    public void draw() {
+    public void drawGameplayStage() {
         stage.act();
         drawBuildingLabels();
         stage.draw();
-    }
-    public void drawPauseButton() {
-        pauseStage.act();
-        pauseStage.draw();
     }
 
     public void resize(int width, int height) {

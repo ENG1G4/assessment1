@@ -3,6 +3,8 @@ package io.github.eng1g4;
 import static com.badlogic.gdx.Gdx.graphics;
 
 import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -10,6 +12,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -35,12 +38,14 @@ public class Main extends ApplicationAdapter {
     private PauseMenu pauseMenu;
     private GameStateManager gameStateManager;
 
-    @Override
+  @Override
     public void create() {
         batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
         image = new Texture("libgdx.png");
-        gameStateManager = new GameStateManager();
+
+        SoundManager soundManager = new SoundManager();
+        gameStateManager = new GameStateManager(soundManager);
 
         font = new BitmapFont();
         font.setColor(Color.WHITE);
@@ -60,16 +65,32 @@ public class Main extends ApplicationAdapter {
         BuildingManager buildingManager = new BuildingManager();
 
         // Create map, sets grid size
-        map = new Map("testgrid.jpg",100, 100, virtualWidth, virtualHeight, buildingManager);
+        map = new Map("testgrid.jpg",100, 100, virtualWidth,
+            virtualHeight, buildingManager, soundManager);
 
         // Instantiate menus
+        Skin skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
         TextHelper textHelper = new TextHelper(viewport, batch, font);
-        this.pauseMenu = new PauseMenu(textHelper);
+        this.pauseMenu = new PauseMenu(textHelper, viewport, gameStateManager, skin, soundManager);
         this.gameOverMenu = new GameOverMenu(textHelper);
 
         // Create Ui instance
-        GameInputProcessor gameInputProcessor = new GameInputProcessor(gameStateManager, pauseMenu, camera, map, this);
-        ui = new UI(viewport, map, buildingManager, gameInputProcessor, gameStateManager);
+        GameInputProcessor gameInputProcessor = new GameInputProcessor(gameStateManager,
+            pauseMenu, camera, map, this);
+        ui = new UI(viewport, map, buildingManager, gameStateManager, skin);
+
+        // Handle game inputs. Ui stage is required to be inputprocessor, so multiplexer
+        // is needed if other inputs are added.
+        InputMultiplexer inputMultiplexer = new InputMultiplexer();
+
+        // Add the Stage's input processor first, so it has priority
+        inputMultiplexer.addProcessor(ui.getStage());
+        inputMultiplexer.addProcessor(pauseMenu.getStage());
+
+        inputMultiplexer.addProcessor(gameInputProcessor);
+
+        // Set the InputMultiplexer as the input processor
+        Gdx.input.setInputProcessor(inputMultiplexer);
 
     }
 
@@ -115,7 +136,6 @@ public class Main extends ApplicationAdapter {
         }
 
         // Include pause button and time remaining in pause menu and game screen.
-        ui.drawPauseButton();
         drawTimeRemaining();
 
         // Draw pause menu
@@ -128,7 +148,7 @@ public class Main extends ApplicationAdapter {
         map.draw(batch, shapeRenderer, mouseWorldCoords.x, mouseWorldCoords.y);
 
         // Draw the UI
-        ui.draw();
+        ui.drawGameplayStage();
     }
 
     @Override

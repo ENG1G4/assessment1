@@ -10,10 +10,6 @@ public abstract class Building extends PlaceableObject implements IBuilding {
         this.buildingType = buildingType;
     }
 
-    public BuildingType getBuildingType() {
-        return this.buildingType;
-    }
-
     @Override
     public float getTextureHeight(){
         return buildingType.getTextureHeight();
